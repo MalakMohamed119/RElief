@@ -1,37 +1,12 @@
-# PSW Rejection Reason Display in Profile
+# PSW Offers Filtering Task
+Hide unavailable offers (no shifts) from PSW offers list.
 
-## Status: In Progress
+## Steps to Complete:
+- [x] Step 1: Add state variables and import forkJoin in offers.ts
+- [x] Step 2: Implement filterAvailableOffers() method
+- [x] Step 3: Update loadOffers() to call filtering
+- [x] Step 4: Update offers.ts template bindings to use availableOffers
+- [x] Step 5: Edit offers.html to use availableOffers and update empty state
+- [ ] Step 6: Test & complete
 
-**TODO Steps:**
-- [ ] 1. Update api.models.ts (ProfileDto + rejectionReason)
-- [ ] 2. Update psw-profile.ts (capture rejectionReason)
-- [ ] 3. Update psw-profile.html (display in alert)
-
----
-
-# PSW Registration Flow Fix - Register → Login → Complete Profile
-
-## Status: ✅ COMPLETE
-
-### Plan Steps:
-1. [x] Create TODO.md ✅
-2. [x] Update login.ts ✅  
-3. [x] Update auth.service.ts ✅
-4. [x] Update complete-profile.ts ✅
-5. [x] Tested & verified flow works ✅
-6. [x] Task complete ✅
-
-**Result:** Flow now works: Register (PSW) → Login → Complete Profile (forced redirect via flags)
-
-**Changes:**
-- login.ts: Debug logs + FORCE redirect if `pswNeedsProfileCompletion=1`
-- auth.service.ts: `needsFreshRegistration()` helper  
-- complete-profile.ts: Entry guard + enhanced logging
-
-**Test with:** `ng serve` → /register → PSW → submit → login → auto complete-profile
-
-**Console logs show exact flow** - check F12 during test.
-
----
-
-🎉 Flow fixed!
+Current: All edits complete. Testing...

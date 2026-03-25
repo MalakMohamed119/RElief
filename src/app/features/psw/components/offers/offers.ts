@@ -10,7 +10,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { AuthService } from '../../../../core/services/auth.service';
 import { ProfileService } from '../../../../core/services/profile.service';
 import { ApplyToOfferDto } from '../../../../core/models/api.models';
-import { take } from 'rxjs';
+import { forkJoin, map, take } from 'rxjs';
 
 interface BrowseOffer {
   id: string;
@@ -55,6 +55,9 @@ export class PswOffers implements OnInit {
   isLoadingDetails = false;
   applyingOfferId: string | null = null;
 
+  availableOffers: BrowseOffer[] = [];
+  loadingAvailability = false;
+
   readonly userProfile$ = this.authService.userProfile$;
 
   ngOnInit(): void {
@@ -83,12 +86,17 @@ export class PswOffers implements OnInit {
         const rawData = response?.data || response?.items || response;
         this.offers = Array.isArray(rawData) ? rawData : [];
         console.log('PSW offers loaded:', this.offers.length);
+        
+        // Filter available offers with shifts
+        this.filterAvailableOffers();
+        
         this.isLoading = false;
-        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading offers:', err);
         this.isLoading = false;
+        this.availableOffers = [];
+        this.loadingAvailability = false;
         this.cdr.detectChanges();
       }
     });
@@ -98,6 +106,8 @@ export class PswOffers implements OnInit {
   onSearchChange(value: string): void {
     this.search = value;
     this.pageIndex = 1;
+    this.offers = [];
+    this.availableOffers = [];
     this.loadOffers();
   }
 
@@ -144,6 +154,38 @@ export class PswOffers implements OnInit {
 
   isShiftSelected(shiftId: string): boolean {
     return this.selectedShiftIds.includes(shiftId);
+  }
+
+  filterAvailableOffers(): void {
+    if (this.offers.length === 0) {
+      this.availableOffers = [];
+      this.loadingAvailability = false;
+      return;
+    }
+
+    this.loadingAvailability = true;
+    const detailRequests = this.offers.map(offer => 
+      this.offersService.getOfferById(offer.id).pipe(
+        map((details: any) => ({ offer, hasShifts: (details.shifts || []).length > 0 }))
+      )
+    );
+
+    forkJoin(detailRequests).subscribe({
+      next: (results) => {
+        this.availableOffers = results
+          .filter((r: any) => r.hasShifts)
+          .map((r: any) => r.offer);
+        console.log(`Filtered to ${this.availableOffers.length} available offers out of ${this.offers.length}`);
+        this.loadingAvailability = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error filtering offers:', err);
+        this.availableOffers = [];
+        this.loadingAvailability = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   apply(offer: BrowseOffer): void {

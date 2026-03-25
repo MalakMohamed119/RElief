@@ -43,18 +43,24 @@
       </button>
     </div>
 
+    <!-- Availability Loading Overlay -->
+    <div *ngIf="loadingAvailability && !isLoading && !error" class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Checking offer availability...</p>
+    </div>
+
     <!-- Empty State -->
-    <div *ngIf="!isLoading && !error && offers.length === 0" class="state-card empty">
+    <div *ngIf="!isLoading && !loadingAvailability && !error && availableOffers.length === 0" class="state-card empty">
       <i class="fas fa-briefcase"></i>
-      <h3>No offers available</h3>
-      <p>Try adjusting your search or check again later for new opportunities.</p>
+      <h3>No available offers</h3>
+      <p>No offers with available shifts right now. Check back later for new opportunities.</p>
     </div>
 
     <!-- Offers Grid -->
-    <div class="offers-grid" *ngIf="!isLoading && !error && offers.length > 0">
+    <div class="offers-grid" *ngIf="!isLoading && !loadingAvailability && !error && availableOffers.length > 0">
       <article
         class="offer-card"
-        *ngFor="let offer of offers">
+        *ngFor="let offer of availableOffers">
         <div class="card-header">
           <h2>{{ offer.title || 'Untitled offer' }}</h2>
           <p class="address" *ngIf="offer.address">
@@ -76,15 +82,13 @@
                 <span class="meta-value">£{{ offer.hourlyRate | number:'1.2-2' }}/hr</span>
               </div>
             </div>
-            <div class="meta-item" *ngIf="offer.shifts && offer.shifts.length">
+            <div class="meta-item">
               <div class="meta-icon">
-                <i class="far fa-calendar-alt"></i>
+                <i class="far fa-calendar-check"></i>
               </div>
               <div class="meta-content">
-                <span class="meta-label">Next Shift</span>
-                <span class="meta-value">
-                  {{ offer.shifts[0].date || offer.shifts[0].Date | date:'MMM d, y' }}
-                </span>
+                <span class="meta-label">Shifts</span>
+                <span class="meta-value">Available</span>
               </div>
             </div>
           </div>
@@ -97,10 +101,10 @@
             <i class="fas fa-eye"></i>
             View Details
           </button>
-<button *ngIf="offer.shifts.length"
+          <button 
             class="btn btn-primary"
             type="button"
-[disabled]="applyingOfferId === offer.id"
+            [disabled]="applyingOfferId === offer.id"
             (click)="apply(offer)">
             <i class="fas" [ngClass]="applyingOfferId === offer.id ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
             {{ applyingOfferId === offer.id ? 'Applying...' : 'Apply Now' }}
