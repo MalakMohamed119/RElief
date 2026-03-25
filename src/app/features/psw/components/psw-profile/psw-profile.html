@@ -71,9 +71,10 @@
                 </div>
                 <div class="alert-content">
                   <p><strong>Profile Rejected</strong></p>
-                  <p>Your profile has been rejected by the admin. Please review and update your information.</p>
+                  <p><strong>Reason:</strong> {{ rejectionReason || 'No reason provided by admin' }}</p>
+                  <p>Your profile has been rejected. Please fix the issues and try again.</p>
                   <a routerLink="/psw/complete-profile" class="btn btn-danger btn-sm">
-                    <i class="fas fa-redo"></i> Update Profile
+                    <i class="fas fa-redo"></i> Update & Try Again
                   </a>
                 </div>
               </div>

@@ -54,6 +54,7 @@ export class PswProfile implements OnInit, OnDestroy {
   verificationStatus: string | null = null;
   isProfileComplete = false;
   isVerified = false;
+  rejectionReason: string | null = null;
 
   editModel = {
     firstName: '',
@@ -77,6 +78,7 @@ export class PswProfile implements OnInit, OnDestroy {
       if (profile) {
         console.log('Profile subscription update:', profile);
         this.verificationStatus = profile.verificationStatus || 'None';
+        this.rejectionReason = profile.rejectionReason || null;
         this.isProfileComplete = !!profile.isProfileCompleted;
         this.isVerified = this.verificationStatus === 'Approved';
         this.cdr.detectChanges();
@@ -123,9 +125,11 @@ export class PswProfile implements OnInit, OnDestroy {
             }
             this.isProfileComplete = !!p.isProfileCompleted;
             this.isVerified = p.verificationStatus === 'Approved';
+            this.rejectionReason = p.rejectionReason || null;
             
             console.log('PSW Profile Status:', {
               verificationStatus: this.verificationStatus,
+              rejectionReason: this.rejectionReason,
               isProfileComplete: this.isProfileComplete,
               isVerified: this.isVerified,
               serverData: p

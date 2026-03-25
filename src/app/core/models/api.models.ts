@@ -62,6 +62,7 @@ export interface ProfileDto {
   phoneNumber: string;
   address: any;
   verificationStatus: string;
+  rejectionReason?: string | null;
   isProfileCompleted: boolean;
   profilePhoto?: { url: string; id: string; fileName: string } | null;
 }

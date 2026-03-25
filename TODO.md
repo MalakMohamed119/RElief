@@ -1,3 +1,14 @@
+# PSW Rejection Reason Display in Profile
+
+## Status: In Progress
+
+**TODO Steps:**
+- [ ] 1. Update api.models.ts (ProfileDto + rejectionReason)
+- [ ] 2. Update psw-profile.ts (capture rejectionReason)
+- [ ] 3. Update psw-profile.html (display in alert)
+
+---
+
 # PSW Registration Flow Fix - Register → Login → Complete Profile
 
 ## Status: ✅ COMPLETE
