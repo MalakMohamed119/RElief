@@ -214,17 +214,43 @@ $text-gray: #64748b;
       margin: 0 auto;
     }
 
-    .input-group {
+.input-group {
       margin-bottom: 1.75rem;
 
       label {
         display: block;
         font-weight: 600;
-        margin-bottom: 8px;
-        color: #334155;
+        margin-bottom: 12px;
+        color: #1e293b;
+        font-size: 0.95rem;
       }
 
-      input, .custom-select {
+      // Enhanced checkbox styling
+      div[style*="background: #f8fafc"] {
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:hover {
+          background: #f0f9ff;
+          border-color: #0b96b1;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(11, 150, 177, 0.15);
+        }
+
+        input[type="checkbox"] {
+          width: 18px;
+          height: 18px;
+          accent-color: #0b96b1;
+          cursor: pointer;
+        }
+
+        label {
+          font-size: 0.95rem !important;
+          color: #1e293b !important;
+        }
+      }
+
+      input:not([type="checkbox"]), .custom-select {
         width: 100%;
         padding: 14px 18px;
         border: 1px solid #e2e8f0;
@@ -391,6 +417,54 @@ $text-gray: #64748b;
   border-color: #dc2626 !important;
   &:focus {
     box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1) !important;
+  }
+}
+
+.checkbox-group {
+  .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      background: #f0f9ff;
+      border-color: #cbd5e1;
+    }
+
+    &:focus-within {
+      border-color: #0b96b1;
+      box-shadow: 0 0 0 3px rgba(11, 150, 177, 0.1);
+      outline: none;
+    }
+
+    input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: #0b96b1;
+      cursor: pointer;
+      margin: 0;
+      flex-shrink: 0;
+      vertical-align: middle;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    label {
+      margin: 0;
+      font-weight: 500;
+      color: #374151;
+      font-size: 0.95rem;
+      cursor: pointer;
+      user-select: none;
+    }
   }
 }
 

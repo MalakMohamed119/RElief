@@ -92,7 +92,7 @@ export class CareHomeHome implements OnInit, AfterViewInit {
       address: [''],
       latitude: [0],
       longitude: [0],
-      hourlyRate: [0, [Validators.required, Validators.min(0)]],
+      hourlyRate: [0, [Validators.required, Validators.min(10)]],
       shifts: this.fb.array([this.createShiftGroup()])
     }, { validators: addressOrLocationValidator() });
   }

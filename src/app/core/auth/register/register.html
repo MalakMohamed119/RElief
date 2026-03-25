@@ -64,81 +64,80 @@
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
 
-      @if (currentMode === 'psw') {
-        <div class="form-row two-columns">
-          <div class="input-group">
-            <label>First Name</label>
-            <input 
-              type="text" 
-              formControlName="firstName"
-              [class.is-invalid]="hasError('firstName', 'required') || hasError('firstName', 'minlength')"
-              placeholder="Enter your first name">
-            @if (hasError('firstName', 'required')) {
-              <div class="error-message">First name is required</div>
-            }
-            @if (hasError('firstName', 'minlength')) {
-              <div class="error-message">Name must be at least 2 characters</div>
-            }
-          </div>
-
-          <div class="input-group">
-            <label>Last Name</label>
-            <input 
-              type="text" 
-              formControlName="lastName"
-              [class.is-invalid]="hasError('lastName', 'required') || hasError('lastName', 'minlength')"
-              placeholder="Enter your last name">
-            @if (hasError('lastName', 'required')) {
-              <div class="error-message">Last name is required</div>
-            }
-            @if (hasError('lastName', 'minlength')) {
-              <div class="error-message">Name must be at least 2 characters</div>
-            }
-          </div>
-        </div>
-
+      <!-- COMMON FIELDS FOR ALL MODES -->
+      <div class="form-row two-columns">
         <div class="input-group">
-          <label>Email</label>
+          <label>First Name *</label>
           <input 
-            type="email" 
-            formControlName="email"
-            [class.is-invalid]="hasError('email', 'required') || hasError('email', 'email')"
-            placeholder="your@email.com">
-          @if (hasError('email', 'required')) {
-            <div class="error-message">Email is required</div>
+            type="text" 
+            formControlName="firstName"
+            [class.is-invalid]="hasError('firstName', 'required') || hasError('firstName', 'minlength')"
+            placeholder="Enter your first name">
+          @if (hasError('firstName', 'required')) {
+            <div class="error-message">First name is required</div>
           }
-          @if (hasError('email', 'email')) {
-            <div class="error-message">Please enter a valid email</div>
+          @if (hasError('firstName', 'minlength')) {
+            <div class="error-message">Name must be at least 2 characters</div>
           }
-        </div>
-
-        <div class="form-row two-columns">
-          <div class="input-group">
-            <label>Phone Number</label>
-            <input 
-              type="tel" 
-              formControlName="phoneNumber"
-              [class.is-invalid]="hasError('phoneNumber', 'required')"
-              placeholder="Enter your phone">
-            @if (hasError('phoneNumber', 'required')) {
-              <div class="error-message">Phone number is required</div>
-            }
-          </div>
-
-          <div class="input-group">
-            <label>Date of Birth</label>
-            <input 
-              type="date" 
-              formControlName="dateOfBirth"
-              [class.is-invalid]="hasError('dateOfBirth', 'required')">
-            @if (hasError('dateOfBirth', 'required')) {
-              <div class="error-message">Date of birth is required</div>
-            }
-          </div>
         </div>
 
         <div class="input-group">
-          <label>Gender</label>
+          <label>Last Name *</label>
+          <input 
+            type="text" 
+            formControlName="lastName"
+            [class.is-invalid]="hasError('lastName', 'required') || hasError('lastName', 'minlength')"
+            placeholder="Enter your last name">
+          @if (hasError('lastName', 'required')) {
+            <div class="error-message">Last name is required</div>
+          }
+          @if (hasError('lastName', 'minlength')) {
+            <div class="error-message">Name must be at least 2 characters</div>
+          }
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Email *</label>
+        <input 
+          type="email" 
+          formControlName="email"
+          [class.is-invalid]="hasError('email', 'required') || hasError('email', 'email')"
+          placeholder="your@email.com">
+        @if (hasError('email', 'required')) {
+          <div class="error-message">Email is required</div>
+        }
+        @if (hasError('email', 'email')) {
+          <div class="error-message">Please enter a valid email</div>
+        }
+      </div>
+
+      <div class="input-group">
+        <label>Phone Number *</label>
+        <input 
+          type="tel" 
+          formControlName="phoneNumber"
+          [class.is-invalid]="hasError('phoneNumber', 'required')"
+          placeholder="+1 (555) 123-4567">
+        @if (hasError('phoneNumber', 'required')) {
+          <div class="error-message">Phone number is required</div>
+        }
+      </div>
+
+      <div class="form-row two-columns">
+        <div class="input-group">
+          <label>Date of Birth *</label>
+          <input 
+            type="date" 
+            formControlName="dateOfBirth"
+            [class.is-invalid]="hasError('dateOfBirth', 'required')">
+          @if (hasError('dateOfBirth', 'required')) {
+            <div class="error-message">Date of birth is required</div>
+          }
+        </div>
+
+        <div class="input-group">
+          <label>Gender *</label>
           <select 
             class="custom-select"
             formControlName="gender"
@@ -146,33 +145,59 @@
             <option value="" disabled selected>Select gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
+            <option value="Other">Other</option>
           </select>
           @if (hasError('gender', 'required')) {
             <div class="error-message">Gender is required</div>
           }
         </div>
+      </div>
 
+      <!-- CAREHOME ONLY: Business/Legal Name fields -->
+      @if (currentMode !== 'psw') {
         <div class="form-row two-columns">
           <div class="input-group">
-            <label>Apartment Number</label>
+            <label>Business License</label>
             <input 
               type="text" 
+              formControlName="businessLicense"
+              placeholder="License number (optional)">
+          </div>
+          <div class="input-group">
+            <label>Legal Name</label>
+            <input 
+              type="text" 
+              formControlName="legalName"
+              placeholder="Official company name">
+          </div>
+        </div>
+      }
+
+      <!-- NESTED ADDRESS FORM GROUP -->
+      <div formGroupName="address">
+        <h4 style="margin: 20px 0 10px 0; font-size: 16px; color: #333;">Address</h4>
+        
+        <div class="form-row two-columns">
+          <div class="input-group">
+            <label>Apartment/Unit # *</label>
+            <input 
+              type="number" 
               formControlName="apartmentNumber"
-              [class.is-invalid]="hasError('apartmentNumber', 'required')"
-              placeholder="Apartment / flat">
-            @if (hasError('apartmentNumber', 'required')) {
+              [class.is-invalid]="hasAddressError('apartmentNumber', 'required')"
+              placeholder="0">
+            @if (hasAddressError('apartmentNumber', 'required')) {
               <div class="error-message">Apartment number is required</div>
             }
           </div>
 
           <div class="input-group">
-            <label>Street</label>
+            <label>Street *</label>
             <input 
               type="text" 
               formControlName="street"
-              [class.is-invalid]="hasError('street', 'required')"
+              [class.is-invalid]="hasAddressError('street', 'required')"
               placeholder="Street name">
-            @if (hasError('street', 'required')) {
+            @if (hasAddressError('street', 'required')) {
               <div class="error-message">Street is required</div>
             }
           </div>
@@ -180,25 +205,25 @@
 
         <div class="form-row two-columns">
           <div class="input-group">
-            <label>City</label>
+            <label>City *</label>
             <input 
               type="text" 
               formControlName="city"
-              [class.is-invalid]="hasError('city', 'required')"
+              [class.is-invalid]="hasAddressError('city', 'required')"
               placeholder="City">
-            @if (hasError('city', 'required')) {
+            @if (hasAddressError('city', 'required')) {
               <div class="error-message">City is required</div>
             }
           </div>
 
           <div class="input-group">
-            <label>State</label>
+            <label>State/Province *</label>
             <input 
               type="text" 
               formControlName="state"
-              [class.is-invalid]="hasError('state', 'required')"
+              [class.is-invalid]="hasAddressError('state', 'required')"
               placeholder="State / province">
-            @if (hasError('state', 'required')) {
+            @if (hasAddressError('state', 'required')) {
               <div class="error-message">State is required</div>
             }
           </div>
@@ -206,64 +231,77 @@
 
         <div class="form-row two-columns">
           <div class="input-group">
-            <label>Postal Code</label>
+            <label>Postal Code *</label>
             <input 
               type="text" 
               formControlName="postalCode"
-              [class.is-invalid]="hasError('postalCode', 'required')"
-              placeholder="Postal code">
-            @if (hasError('postalCode', 'required')) {
+              [class.is-invalid]="hasAddressError('postalCode', 'required')"
+              placeholder="Postal/ZIP code">
+            @if (hasAddressError('postalCode', 'required')) {
               <div class="error-message">Postal code is required</div>
             }
           </div>
 
           <div class="input-group">
-            <label>Country</label>
+            <label>Country *</label>
             <input 
               type="text" 
               formControlName="country"
-              [class.is-invalid]="hasError('country', 'required')"
+              [class.is-invalid]="hasAddressError('country', 'required')"
               placeholder="Country">
-            @if (hasError('country', 'required')) {
+            @if (hasAddressError('country', 'required')) {
               <div class="error-message">Country is required</div>
             }
           </div>
         </div>
+      </div>
 
-        <div class="input-group">
-          <label>Password</label>
-          <div class="password-input-container">
-            <input 
-              [type]="showPassword ? 'text' : 'password'" 
-              formControlName="password"
-              [class.is-invalid]="hasError('password', 'required')"
-              placeholder="Create a password">
-            <button type="button" class="toggle-password" (click)="togglePasswordVisibility('password')">
-              <i [class]="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
-            </button>
-          </div>
+      <!-- PASSWORD FIELDS (ALL MODES) -->
+      <div class="input-group">
+        <label>Password *</label>
+        <div class="password-input-container">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            formControlName="password"
+            [class.is-invalid]="hasError('password', 'required')"
+            placeholder="Create a password at least 8 characters">
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility('password')">
+            <i [class]="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+          </button>
         </div>
+        @if (hasError('password', 'minlength')) {
+          <div class="error-message">Password must be at least 8 characters</div>
+        }
+      </div>
 
-        <div class="input-group">
-          <label>Confirm Password</label>
-          <div class="password-input-container">
-            <input 
-              [type]="showConfirmPassword ? 'text' : 'password'" 
-              formControlName="confirmPassword"
-              [class.is-invalid]="registerForm.hasError('mismatch')"
-              placeholder="Confirm your password">
-            <button type="button" class="toggle-password" (click)="togglePasswordVisibility('confirmPassword')">
-              <i [class]="showConfirmPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
-            </button>
-          </div>
+      <div class="input-group">
+        <label>Confirm Password *</label>
+        <div class="password-input-container">
+          <input 
+            [type]="showConfirmPassword ? 'text' : 'password'" 
+            formControlName="confirmPassword"
+            [class.is-invalid]="registerForm.hasError('mismatch')"
+            placeholder="Confirm your password">
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility('confirmPassword')">
+            <i [class]="showConfirmPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+          </button>
         </div>
+        @if (registerForm.hasError('mismatch') && 
+             (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched)) {
+          <div class="error-message">Passwords do not match</div>
+        }
+      </div>
 
-        <button type="submit" class="sign-in-btn" [disabled]="isLoading">
-          {{ !isLoading ? 'Create Account' : 'Creating Account...' }}
-        </button>
-      }
+      <!-- SUBMIT BUTTON -->
+      <button 
+        type="submit" 
+        class="sign-in-btn" 
+        [disabled]="isLoading || registerForm.invalid">
+        {{ !isLoading ? (currentMode === 'psw' ? 'Create PSW Account' : 
+                        currentMode === 'carehome-individual' ? 'Create Care Home Account' : 
+                        'Create Multiple Homes Account') : 'Creating Account...' }}
+      </button>
 
-      <!-- CareHome forms same as original -->
     </form>
   </div>
 </div>

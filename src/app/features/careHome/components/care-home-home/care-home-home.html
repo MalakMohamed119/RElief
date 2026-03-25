@@ -92,8 +92,11 @@
             <label for="hourlyRate">Hourly Rate</label>
             <div class="input-wrapper">
               <i class="fas fa-coins"></i>
-              <input type="number" id="hourlyRate" formControlName="hourlyRate" placeholder="0" min="0" step="0.01">
+              <input type="number" id="hourlyRate" formControlName="hourlyRate" placeholder="Enter rate (min 10)" min="10" step="0.01">
             </div>
+            @if (requestForm.get('hourlyRate')?.errors?.['min'] && requestForm.get('hourlyRate')?.touched) {
+              <div class="error-message">Hourly rate must be at least 10.</div>
+            }
           </div>
 
           <div class="shifts-section">
@@ -176,3 +179,4 @@
 </section>
 
 <app-footer></app-footer>
+
