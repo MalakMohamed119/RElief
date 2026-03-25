@@ -1,0 +1,682 @@
+// Variables - Blue Theme
+$primary-color: #0b4897;
+$primary-light: #0b96b1;
+$primary-dark: #054779;
+$success-color: #0284c7;
+$success-light: #e0f2fe;
+$warning-color: #f59e0b;
+$warning-light: #fef3c7;
+$danger-color: #ef4444;
+$danger-light: #fee2e2;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$text-light: #94a3b8;
+$border-color: #e2e8f0;
+$bg-light: #f8fafc;
+$white: #ffffff;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$gradient: linear-gradient(135deg, $primary-light 0%, $primary-color 50%, $primary-dark 100%);
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
+
+.psw-offers-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: $bg-light;
+}
+
+// Header Banner
+.page-header {
+  background: $gradient;
+  padding: 3rem 2rem;
+  position: relative;
+  overflow: hidden;
+
+  .header-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    color: $white;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  p {
+    color: rgba($white, 0.85);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .header-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+}
+
+.container {
+  max-width: 1400px;
+  margin: -2rem auto 2rem;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 3;
+  flex: 1;
+}
+
+// Toolbar
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 280px;
+  max-width: 450px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: $white;
+  border-radius: 50px;
+  border: 1px solid $border-color;
+  padding: 0.6rem 1rem;
+  box-shadow: $shadow-sm;
+  transition: all 0.3s ease;
+
+  &:focus-within {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
+  }
+
+  i {
+    color: $text-light;
+    font-size: 0.85rem;
+  }
+
+  input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 0.9rem;
+    background: transparent;
+    color: $text-primary;
+
+    &::placeholder {
+      color: $text-light;
+    }
+  }
+}
+
+// Buttons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: $gradient;
+  color: $white;
+  box-shadow: 0 4px 15px rgba($primary-color, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba($primary-color, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  background: $white;
+  color: $primary-color;
+  border-color: $border-color;
+
+  &:hover {
+    background: $primary-light;
+    border-color: $primary-color;
+  }
+}
+
+.btn-outline {
+  background: $white;
+  color: $primary-color;
+  border-color: $border-color;
+
+  &:hover {
+    background: $primary-light;
+    border-color: $primary-color;
+  }
+}
+
+// State Cards
+.state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+  margin-bottom: 1.5rem;
+
+  &.loading .spinner {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 3px solid $border-color;
+    border-top-color: $primary-color;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  &.empty,
+  &.error {
+    padding: 5rem 3rem;
+
+    i {
+      font-size: 5rem;
+      color: $text-light;
+      margin-bottom: 2rem;
+    }
+  }
+
+  &.error {
+    i {
+      color: #ef4444;
+    }
+  }
+
+  h3 {
+    color: $text-primary;
+    font-size: 1.25rem;
+    margin: 0 0 1rem;
+  }
+
+  p {
+    color: $text-secondary;
+    margin: 0;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+}
+
+// Offers Grid
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.offer-card {
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+
+  .card-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $border-color;
+
+    h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+      color: $text-primary;
+      font-weight: 600;
+    }
+
+    .address {
+      margin: 0;
+      font-size: 0.9rem;
+      color: $text-secondary;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+
+      i {
+        color: $primary-color;
+      }
+    }
+  }
+
+  .card-body {
+    flex: 1;
+    margin-bottom: 1rem;
+
+    .description {
+      margin: 0 0 1rem;
+      color: $text-secondary;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: $bg-light;
+    border-radius: $radius-md;
+
+    .meta-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: $radius-sm;
+      background: $gradient;
+      color: $white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .meta-content {
+      display: flex;
+      flex-direction: column;
+
+      .meta-label {
+        font-size: 0.75rem;
+        color: $text-light;
+      }
+
+      .meta-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: $text-primary;
+      }
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid $border-color;
+
+    .btn {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+// Modal
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+}
+
+.modal-content {
+  background: $white;
+  border-radius: $radius-xl;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: $text-primary;
+  }
+
+  .close-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: $text-secondary;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $bg-light;
+      color: $text-primary;
+    }
+  }
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+
+  .spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 3px solid $border-color;
+    border-top-color: $primary-color;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    margin: 0;
+    color: $text-secondary;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.offer-description {
+  margin: 0 0 1.5rem;
+  color: $text-secondary;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: $bg-light;
+  border-radius: $radius-md;
+
+  .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: $text-light;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .value {
+    color: $text-primary;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: $primary-color;
+    }
+
+    &.rate {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $primary-color;
+    }
+  }
+}
+
+// Shifts Section
+.shifts-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $border-color;
+
+  .shifts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: $text-primary;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      i {
+        color: $primary-color;
+      }
+    }
+
+    .selected-count {
+      font-size: 0.8rem;
+      color: $primary-color;
+      background: $primary-light;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+  }
+}
+
+.shifts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .shift-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1rem;
+    border: 2px solid $border-color;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: $bg-light;
+
+    &:hover {
+      border-color: $primary-color;
+      background: $white;
+    }
+
+    &.selected {
+      border-color: $primary-color;
+      background: linear-gradient(135deg, rgba($primary-color, 0.08), rgba($primary-color, 0.03));
+    }
+
+    .shift-checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid $border-color;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      color: $white;
+    }
+
+    &.selected .shift-checkbox {
+      background: $gradient;
+      border-color: $primary-color;
+    }
+
+    .shift-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+
+      .shift-date {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: $text-primary;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+          color: $primary-color;
+          font-size: 0.85rem;
+        }
+      }
+
+      .shift-time {
+        font-size: 0.85rem;
+        color: $text-secondary;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+          color: $text-light;
+          font-size: 0.8rem;
+        }
+      }
+
+      .shift-status {
+        font-size: 0.75rem;
+        color: $success-color;
+        background: $success-light;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 0.25rem;
+        width: fit-content;
+      }
+    }
+  }
+}
+
+.no-shifts {
+  text-align: center;
+  padding: 2rem;
+  color: $text-secondary;
+
+  i {
+    font-size: 3rem;
+    color: $text-light;
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.modal-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid $border-color;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .page-header {
+    padding: 2rem 1.5rem;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .container {
+    padding: 0 1rem;
+    margin-top: -1.5rem;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: none;
+  }
+
+  .offers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .offer-card {
+    .meta-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}
+

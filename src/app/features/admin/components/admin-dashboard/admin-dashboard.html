@@ -1,0 +1,126 @@
+<div class="admin-page">
+  <!-- Welcome Header -->
+  <div class="welcome-header">
+    <div class="welcome-content">
+      <h1>Welcome, Admin! 👋</h1>
+      <p>Manage PSW verifications, applications, and offers from here.</p>
+    </div>
+    <div class="welcome-actions">
+      <button type="button" class="logout-btn" (click)="onLogout()" title="Logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span>Logout</span>
+      </button>
+      <div class="welcome-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loadError" class="dashboard-error">{{ loadError }}</div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card verifications">
+      <div class="stat-icon">
+        <i class="fa-solid fa-user-check"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-number">{{ isLoading ? '—' : stats.verifications }}</span>
+        <span class="stat-label">Pending Verifications</span>
+      </div>
+      <a routerLink="/admin/verifications" class="stat-link">
+        View All <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="stat-card applications">
+      <div class="stat-icon">
+        <i class="fa-solid fa-file-signature"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-number">{{ isLoading ? '—' : stats.applications }}</span>
+        <span class="stat-label">Pending Applications</span>
+      </div>
+      <a routerLink="/admin/applications" class="stat-link">
+        View All <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="stat-card offers">
+      <div class="stat-icon">
+        <i class="fa-solid fa-briefcase"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-number">{{ isLoading ? '—' : stats.offers }}</span>
+        <span class="stat-label">Total Offers</span>
+      </div>
+      <a routerLink="/admin/offers" class="stat-link">
+        View All <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="stat-card users">
+      <div class="stat-icon">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-number">{{ isLoading ? '—' : stats.users }}</span>
+        <span class="stat-label">Users</span>
+      </div>
+      <a routerLink="/admin/users" class="stat-link">
+        View All <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Navigation Cards -->
+  <h2 class="section-title">Quick Actions</h2>
+  <div class="admin-links">
+    <a routerLink="/admin/verifications" class="admin-card">
+      <div class="card-icon verifications">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="card-content">
+        <h2>Verifications</h2>
+        <p>Review PSW documents and verify accounts</p>
+      </div>
+      <div class="card-badge" *ngIf="stats.verifications > 0">
+        {{ stats.verifications }}
+      </div>
+    </a>
+
+    <a routerLink="/admin/applications" class="admin-card">
+      <div class="card-icon applications">
+        <i class="fa-solid fa-clipboard-list"></i>
+      </div>
+      <div class="card-content">
+        <h2>Applications</h2>
+        <p>Approve or reject job applications</p>
+      </div>
+      <div class="card-badge" *ngIf="stats.applications > 0">
+        {{ stats.applications }}
+      </div>
+    </a>
+
+    <a routerLink="/admin/offers" class="admin-card">
+      <div class="card-icon offers">
+        <i class="fa-solid fa-handshake"></i>
+      </div>
+      <div class="card-content">
+        <h2>Offers</h2>
+        <p>View all job offers in the system</p>
+      </div>
+    </a>
+
+    <a routerLink="/admin/users" class="admin-card">
+      <div class="card-icon users">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="card-content">
+        <h2>Users</h2>
+        <p>Browse users, PSW directory, and profiles</p>
+      </div>
+    </a>
+  </div>
+</div>
+

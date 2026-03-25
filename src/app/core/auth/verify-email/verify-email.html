@@ -1,0 +1,67 @@
+<div class="login-container">
+  <div class="logo-wrapper">
+    <div class="logo-box">
+      <img src="assets/logo.jpg" alt="Care Home Logo" />
+    </div>
+    <p class="subtitle">Care Management Platform</p>
+  </div>
+
+  <div class="login-card">
+    <h3>Verify email</h3>
+    <p>Enter the code we sent to your inbox</p>
+
+    <div
+      *ngIf="message"
+      class="session-expired-msg"
+      style="background: #ecfdf5; color: #047857; border-color: #6ee7b7"
+    >
+      {{ message }}
+    </div>
+    <div *ngIf="error" class="login-error-msg">{{ error }}</div>
+
+<div class="tab-container tab-container--double">
+      <button type="button" routerLink="/login" routerLinkActive="active" class="tab-btn">Login</button>
+      <button type="button" routerLink="/register" routerLinkActive="active" class="tab-btn">Register</button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <div class="input-group">
+        <label>Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          [class.is-invalid]="hasError('email', 'required') || hasError('email', 'email')"
+          placeholder="your@email.com"
+        />
+        <div *ngIf="hasError('email', 'required')" class="error-message">Email is required</div>
+        <div *ngIf="hasError('email', 'email')" class="error-message">Please enter a valid email</div>
+      </div>
+      <div class="input-group">
+        <label>Verification code</label>
+        <input
+          type="text"
+          formControlName="code"
+          autocomplete="one-time-code"
+          placeholder="Enter code from email"
+        />
+        <div *ngIf="hasError('code', 'required')" class="error-message">Code is required</div>
+        <div *ngIf="hasError('code', 'minlength')" class="error-message">Code looks too short</div>
+      </div>
+      <button type="submit" class="sign-in-btn" [disabled]="isLoading">
+        {{ isLoading ? 'Verifying…' : 'Verify email' }}
+      </button>
+      <button
+        type="button"
+        class="sign-in-btn"
+        style="margin-top: 0.5rem; background: #64748b; box-shadow: none"
+        [disabled]="resendLoading"
+        (click)="resend()"
+      >
+        {{ resendLoading ? 'Sending…' : 'Resend code' }}
+      </button>
+      <p style="text-align: center; margin-top: 1rem; font-size: 0.9rem">
+        <a routerLink="/forgot-password" class="forgot-password">Forgot password?</a>
+      </p>
+    </form>
+  </div>
+</div>

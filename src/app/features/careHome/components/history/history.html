@@ -1,0 +1,381 @@
+<app-navbar></app-navbar>
+
+<div class="carehome-history-page">
+  <!-- Header Banner -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>My Job Offers & History</h1>
+      <p>Manage your published offers and track their status</p>
+    </div>
+    <div class="header-pattern"></div>
+  </div>
+
+  <main class="container">
+    <!-- Toolbar with Tabs -->
+    <div class="toolbar">
+      <div class="page-title">
+        <h2>Job Offers</h2>
+      </div>
+      <button type="button" class="create-btn" (click)="goToCreateOffer()">
+        <i class="fas fa-plus"></i>
+        Create New Offer
+      </button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeTab === 'active'"
+        (click)="activeTab = 'active'">
+        <i class="fas fa-briefcase"></i>
+        Active Offers
+        <span class="tab-count" *ngIf="offers.length > 0">{{ offers.length }}</span>
+      </button>
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeTab === 'completed'"
+        (click)="activeTab = 'completed'">
+        <i class="fas fa-check-circle"></i>
+        Completed Requests
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    @if (offersLoading) {
+      <div class="state-card loading">
+        <div class="spinner"></div>
+        <p>Loading your offers...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (!offersLoading && offersError) {
+      <div class="state-card error">
+        <i class="fas fa-exclamation-circle"></i>
+        <h3>Error Loading Offers</h3>
+        <p>{{ offersError }}</p>
+        <button type="button" class="btn btn-primary" (click)="ngOnInit()">
+          <i class="fas fa-redo"></i> Try Again
+        </button>
+      </div>
+    }
+
+    <!-- Empty State for Active -->
+    @if (!offersLoading && !offersError && activeTab === 'active' && offers.length === 0) {
+      <div class="state-card empty">
+        <div class="empty-icon">📋</div>
+        <h3>No Active Offers</h3>
+        <p>Start by creating your first job offer to attract care professionals.</p>
+        <!-- <button type="button" class="create-btn" (click)="goToCreateOffer()">
+          <i class="fas fa-plus"></i> Create Your First Offer
+        </button> -->
+      </div>
+    }
+
+    <!-- Active Offers Grid -->
+    @if (!offersLoading && !offersError && activeTab === 'active' && offers.length > 0) {
+      <div class="offers-grid">
+        @for (offer of offers; track offer.id || $index) {
+          <div class="offer-card">
+            <div class="card-header">
+              <div class="offer-icon">💼</div>
+              <div class="offer-info">
+                <h3>{{ offer.title || 'Untitled Offer' }}</h3>
+                <span class="status-badge active">Active</span>
+              </div>
+            </div>
+            
+            <div class="card-body">
+              @if (offer.description) {
+                <p class="description">{{ offer.description }}</p>
+              }
+              
+              <div class="info-list">
+                @if (offer.address) {
+                  <div class="info-row">
+                    <span class="info-label">
+                      <i class="fas fa-map-marker-alt"></i>
+                      Address
+                    </span>
+                    <span class="info-value">{{ offer.address }}</span>
+                  </div>
+                }
+                
+                @if (offer.hourlyRate != null && offer.hourlyRate !== '') {
+                  <div class="info-row">
+                    <span class="info-label">
+                      <i class="fas fa-pound-sign"></i>
+                      Hourly Rate
+                    </span>
+                    <span class="info-value rate-value">£{{ offer.hourlyRate }}/hr</span>
+                  </div>
+                }
+                
+                @if (offer.shifts && offer.shifts.length > 0) {
+                  <div class="info-row">
+                    <span class="info-label">
+                      <i class="fas fa-calendar-alt"></i>
+                      Shifts
+                    </span>
+                    <span class="info-value">{{ offer.shifts.length }} shift(s)</span>
+                  </div>
+                }
+              </div>
+            </div>
+            
+            <div class="card-footer">
+              <button type="button" class="btn btn-outline" (click)="onViewOffer(offer)">
+                <i class="fas fa-eye"></i>
+                View
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="onEditOffer(offer)">
+                <i class="fas fa-edit"></i>
+                Edit
+              </button>
+              <button type="button" class="btn btn-danger" (click)="onDeleteOffer(offer)">
+                <i class="fas fa-trash-alt"></i>
+                Delete
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Completed Requests Grid -->
+    @if (activeTab === 'completed') {
+      <div class="completed-grid">
+        <div class="completed-card">
+          <div class="completed-header">
+            <div class="completed-icon">✅</div>
+            <div class="completed-info">
+              <h3>Elderly Care</h3>
+              <span class="status-badge completed">Completed</span>
+            </div>
+          </div>
+          <div class="completed-body">
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-align-left"></i>
+                Description
+              </span>
+              <span class="info-value">Full-time elderly care support at home.</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-map-marker-alt"></i>
+                Location
+              </span>
+              <span class="info-value">123 Main St, Cairo</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-pound-sign"></i>
+                Rate
+              </span>
+              <span class="info-value rate-value">£25/hr</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-check-circle"></i>
+                Completed
+              </span>
+              <span class="info-value">February 20, 2024</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="completed-card">
+          <div class="completed-header">
+            <div class="completed-icon">✅</div>
+            <div class="completed-info">
+              <h3>Home Nursing</h3>
+              <span class="status-badge completed">Completed</span>
+            </div>
+          </div>
+          <div class="completed-body">
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-align-left"></i>
+                Description
+              </span>
+              <span class="info-value">Post-surgery nursing care and medication support.</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-map-marker-alt"></i>
+                Location
+              </span>
+              <span class="info-value">45 Garden Ave, Alexandria</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-pound-sign"></i>
+                Rate
+              </span>
+              <span class="info-value rate-value">£30/hr</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-check-circle"></i>
+                Completed
+              </span>
+              <span class="info-value">February 12, 2024</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="completed-card">
+          <div class="completed-header">
+            <div class="completed-icon">✅</div>
+            <div class="completed-info">
+              <h3>Daily Care</h3>
+              <span class="status-badge completed">Completed</span>
+            </div>
+          </div>
+          <div class="completed-body">
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-align-left"></i>
+                Description
+              </span>
+              <span class="info-value">Daily assistance with mobility and personal care.</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-map-marker-alt"></i>
+                Location
+              </span>
+              <span class="info-value">78 Health Rd, Giza</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-pound-sign"></i>
+                Rate
+              </span>
+              <span class="info-value rate-value">£22/hr</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <i class="fas fa-check-circle"></i>
+                Completed
+              </span>
+              <span class="info-value">February 8, 2024</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Back Action -->
+    <div class="actions">
+      <a routerLink="/care-home" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Home
+      </a>
+    </div>
+  </main>
+</div>
+
+<!-- Modal popup for viewing an offer -->
+@if (selectedOffer) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ selectedOffer.title || 'Offer Details' }}</h3>
+        <button type="button" class="modal-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        @if (selectedOfferLoading) {
+          <div class="modal-loading">
+            <div class="spinner"></div>
+            <p>Loading offer details...</p>
+          </div>
+        }
+        
+        @if (selectedOfferError) {
+          <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ selectedOfferError }}
+          </div>
+        }
+        
+        @if (selectedOffer.description) {
+          <div class="detail-section">
+            <span class="detail-label">
+              <i class="fas fa-align-left"></i>
+              Description
+            </span>
+            <p class="detail-value">{{ selectedOffer.description }}</p>
+          </div>
+        }
+        
+        @if (selectedOffer.address) {
+          <div class="detail-section">
+            <span class="detail-label">
+              <i class="fas fa-map-marker-alt"></i>
+              Address
+            </span>
+            <p class="detail-value">{{ selectedOffer.address }}</p>
+          </div>
+        }
+        
+        @if (selectedOffer.hourlyRate != null && selectedOffer.hourlyRate !== '') {
+          <div class="detail-section">
+            <span class="detail-label">
+              <i class="fas fa-pound-sign"></i>
+              Hourly Rate
+            </span>
+            <p class="detail-value rate">£{{ selectedOffer.hourlyRate }}/hour</p>
+          </div>
+        }
+        
+        @if (selectedOffer.shifts && selectedOffer.shifts.length) {
+          <div class="detail-section">
+            <span class="detail-label">
+              <i class="fas fa-calendar-check"></i>
+              Shifts
+            </span>
+            <ul class="shifts-list">
+              @for (s of selectedOffer.shifts; track s.id ?? s.shiftId ?? s.Id ?? $index) {
+                <li class="shift-item">
+                  <i class="far fa-calendar-alt"></i>
+                  <span class="shift-date">
+                    {{ s.date || s.Date | date:'fullDate' }}
+                  </span>
+                  @if (s.startTime || s.start || s.Start) {
+                    <span class="shift-time">
+                      {{ (s.startTime || s.start || s.Start) | slice: 0:5 }} - {{ (s.endTime || s.end || s.End) | slice: 0:5 }}
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+          Close
+        </button>
+        <button type="button" class="btn btn-outline" (click)="onEditOffer(selectedOffer)">
+          <i class="fas fa-edit"></i>
+          Edit
+        </button>
+        <button type="button" class="btn btn-danger" (click)="onDeleteOffer(selectedOffer)">
+          <i class="fas fa-trash-alt"></i>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer></app-footer>
+

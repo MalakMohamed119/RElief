@@ -1,0 +1,311 @@
+<app-navbar></app-navbar>
+
+<div class="profile-page">
+  <!-- Header Banner -->
+  <div class="profile-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1>Care Home Profile</h1>
+        <p>Manage your care home information and settings</p>
+      </div>
+    </div>
+    <div class="header-pattern"></div>
+  </div>
+
+  <div class="profile-container">
+    <!-- Main Profile Card -->
+    <div class="profile-main-card">
+      <!-- Profile Header Section -->
+      <div class="profile-header-section">
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar">
+            <i class="fa-solid fa-building"></i>
+          </div>
+          <button class="change-avatar-btn">
+            <i class="fas fa-camera"></i>
+          </button>
+        </div>
+        
+        <div class="profile-header-info">
+          <div class="name-row">
+            <h2 class="profile-name">{{ profile.name || 'Care Home' }}</h2>
+            <span class="status-badge verified">
+              <i class="fas fa-check-circle"></i> Verified
+            </span>
+          </div>
+          <p class="profile-type">
+            <i class="fas fa-hospital-alt"></i> Care Home Account
+          </p>
+          <div class="profile-meta">
+            <span class="meta-item">
+              <i class="fas fa-calendar-alt"></i> Member since {{ profile.joinDate || 'N/A' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="quick-stats">
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">8</span>
+            <span class="stat-label">Applications</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-hand-holding-heart"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">5</span>
+            <span class="stat-label">Offers</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">3</span>
+            <span class="stat-label">Hired</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact & Info Cards -->
+    <div class="profile-details-grid">
+      <!-- Contact Information Card -->
+      <div class="detail-card">
+        <div class="card-header">
+          <h3><i class="fas fa-address-card"></i> Contact Information</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Email Address</span>
+                <span class="info-value">{{ profile.email || 'Not provided' }}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-phone"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Phone Number</span>
+                <span class="info-value">{{ profile.phone || 'Not provided' }}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Address</span>
+                <span class="info-value">{{ profile.address || 'Not provided' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Care Home Details Card -->
+      <div class="detail-card">
+        <div class="card-header">
+          <h3><i class="fas fa-building"></i> Care Home Details</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-home"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Care Home Name</span>
+                <span class="info-value">{{ profile.name || 'N/A' }}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-ruler-combined"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Capacity</span>
+                <span class="info-value">50 residents</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-certificate"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">License Status</span>
+                <span class="info-value">
+                  <span class="license-badge active">Licensed & Active</span>
+                </span>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">
+                <i class="fas fa-globe-americas"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Country</span>
+                <span class="info-value">{{ editModel.address.country || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div class="edit-profile-card">
+      <div class="card-header">
+        <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+        <span class="header-subtitle">Update your care home information</span>
+      </div>
+      
+      <form class="edit-form" (ngSubmit)="saveProfile()" #f="ngForm">
+        <div class="form-section">
+          <h4>Contact Information</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Contact Person - First Name</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user"></i>
+                <input
+                  type="text"
+                  name="firstName"
+                  [(ngModel)]="editModel.firstName"
+                  placeholder="First name"
+                  required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Contact Person - Last Name</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user"></i>
+                <input
+                  type="text"
+                  name="lastName"
+                  [(ngModel)]="editModel.lastName"
+                  placeholder="Last name"
+                  required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <div class="input-wrapper">
+                <i class="fas fa-phone"></i>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  [(ngModel)]="editModel.phoneNumber"
+                  placeholder="Phone number"
+                  required />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Address Information</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Apartment/Suite</label>
+              <div class="input-wrapper">
+                <i class="fas fa-building"></i>
+                <input
+                  type="number"
+                  name="apartmentNumber"
+                  [(ngModel)]="editModel.address.apartmentNumber"
+                  placeholder="Apartment #" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Street Address</label>
+              <div class="input-wrapper">
+                <i class="fas fa-road"></i>
+                <input
+                  type="text"
+                  name="street"
+                  [(ngModel)]="editModel.address.street"
+                  placeholder="Street address"
+                  required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>City</label>
+              <div class="input-wrapper">
+                <i class="fas fa-city"></i>
+                <input
+                  type="text"
+                  name="city"
+                  [(ngModel)]="editModel.address.city"
+                  placeholder="City"
+                  required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>State/Province</label>
+              <div class="input-wrapper">
+                <i class="fas fa-map"></i>
+                <input
+                  type="text"
+                  name="state"
+                  [(ngModel)]="editModel.address.state"
+                  placeholder="State"
+                  required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Postal Code</label>
+              <div class="input-wrapper">
+                <i class="fas fa-mail-bulk"></i>
+                <input
+                  type="text"
+                  name="postalCode"
+                  [(ngModel)]="editModel.address.postalCode"
+                  placeholder="Postal code"
+                  required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <div class="input-wrapper">
+                <i class="fas fa-globe"></i>
+                <input
+                  type="text"
+                  name="country"
+                  [(ngModel)]="editModel.address.country"
+                  placeholder="Country"
+                  required />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="save-btn"
+            type="submit"
+            [disabled]="isSaving || !f.form.valid">
+            <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ isSaving ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
+

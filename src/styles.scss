@@ -1,0 +1,167 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
+
+/* Global color variables - Blue Theme */
+:root {
+  /* Primary Colors - Blue Palette */
+  --primary-50: #0b96b1;
+  --primary-100: #0b8496;
+  --primary-200: #0b4897;
+  --primary-300: #0b5a8a;
+  --primary-400: #054779;
+  --primary-500: #043c6b;
+  
+  --primary-color: #0b4897;
+  --primary-light: #0b96b1;
+  --primary-dark: #054779;
+  --primary-gradient: linear-gradient(135deg, #0b96b1 0%, #0b4897 50%, #054779 100%);
+  --primary-hover: #0b5a8a;
+  
+  --success-color: #0284c7;
+  --success-light: #e0f2fe;
+  --warning-color: #f59e0b;
+  --warning-light: #fef3c7;
+  --danger-color: #ef4444;
+  --danger-light: #fee2e2;
+  
+  --bg-light: #f8fafc;
+  --text-gray: #64748b;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-light: #94a3b8;
+  --border-color: #e2e8f0;
+  
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Global button styles */
+button, .btn, [role="button"] {
+  &.btn-primary {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    
+    &:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+  
+  &.btn-outline {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: rgba(3, 74, 144, 0.1);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+/* Global hover effects */
+a, button, [role="button"], .clickable {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+/* Form elements */
+input, select, textarea {
+  &[type="text"],
+  &[type="email"],
+  &[type="password"],
+  &[type="number"],
+  &[type="tel"],
+  &[type="date"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    outline: none;
+    transition: 0.3s;
+    
+    &:focus {
+      border-color: var(--primary-color);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(11, 150, 177, 0.1);
+    }
+  }
+}
+
+/* Card hover effect */
+.card, .service-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg) !important;
+  }
+}
+
+/* Leaflet map */
+@import 'leaflet/dist/leaflet.css';
+
+/* You can add global styles to this file, and also import other style files */

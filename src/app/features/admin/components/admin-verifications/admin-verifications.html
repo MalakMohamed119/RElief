@@ -1,0 +1,204 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <div class="header-left">
+      <a routerLink="/admin/dashboard" class="back-btn" title="Back to Dashboard">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <h1>Pending PSW Verifications</h1>
+    </div>
+    <button type="button" class="refresh-btn admin-refresh-btn" (click)="load()" [disabled]="isLoading">
+      <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isLoading"></i>
+      {{ isLoading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <div class="admin-toolbar">
+    <div class="search-wrap">
+      <label for="ver-search">Search</label>
+      <input
+        id="ver-search"
+        class="search-input"
+        type="search"
+        [(ngModel)]="searchInput"
+        (input)="onSearch()"
+        placeholder="Name, email…"
+      />
+    </div>
+    <div class="toolbar-field">
+      <label for="ver-page-size">Page size</label>
+      <select
+        id="ver-page-size"
+        class="form-select"
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange(+ $event)"
+      >
+        <option [value]="8">8</option>
+        <option [value]="12">12</option>
+        <option [value]="24">24</option>
+        <option [value]="48">48</option>
+      </select>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="btn-apply" (click)="applyFilters()" [disabled]="isLoading">
+        Apply
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <div>Loading verifications...</div>
+  </div>
+
+  <div *ngIf="!isLoading && error" class="error">
+    <strong>Error:</strong> {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount === 0 && hasAnyLoaded" class="empty">
+    <div class="empty-icon">🔍</div>
+    <div>No results match your search</div>
+    <div class="empty-subtitle">Try different keywords or clear search</div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount === 0 && !hasAnyLoaded" class="empty">
+    <div class="empty-icon">✓</div>
+    <div>No pending verifications</div>
+    <div class="empty-subtitle">All PSW accounts have been verified</div>
+  </div>
+
+  <!-- Cards Grid -->
+  <div *ngIf="!isLoading && !error && verifications.length > 0" class="cards-grid">
+    <div *ngFor="let v of verifications" class="verification-card">
+      <div class="card-header">
+        <div class="psw-avatar">
+          {{ getDisplayName(v).charAt(0).toUpperCase() }}
+        </div>
+        <div class="psw-info">
+          <h3>{{ getDisplayName(v) }}</h3>
+          <span class="status-badge pending">Pending</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-label">📧 Email</span>
+          <span class="info-value">{{ getEmail(v) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🆔 Identity</span>
+          <span class="info-value">{{ getIdentityType(v) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📅 Submitted</span>
+          <span class="info-value">{{ getSubmittedDate(v) }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer card-footer-split">
+        <button type="button" class="btn btn-profile" (click)="openProfile(v.pswUserId)">
+          <i class="fa-solid fa-user"></i> View profile
+        </button>
+        <div class="card-footer-actions">
+          <button type="button" class="btn btn-approve" (click)="approve(v.pswUserId)">
+            ✓ Approve
+          </button>
+          <button type="button" class="btn btn-reject" (click)="openReject(v.pswUserId)">
+            ✕ Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount > 0" class="pagination-bar">
+    <span class="pagination-info">
+      Showing {{ verifications.length }} of {{ filteredCount }} · Page {{ pageIndex + 1 }} of {{ totalPages }}
+    </span>
+    <div class="pagination-controls">
+      <button type="button" class="pagination-btn" (click)="goPrev()" [disabled]="pageIndex === 0 || isLoading">
+        Previous
+      </button>
+      <button
+        type="button"
+        class="pagination-btn"
+        (click)="goNext()"
+        [disabled]="pageIndex >= totalPages - 1 || isLoading"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- Profile modal (before verify) -->
+  <div *ngIf="profileUserId" class="modal" (click)="closeProfile()">
+    <div class="modal-content ver-profile-modal" (click)="$event.stopPropagation()">
+      <div class="ver-profile-head">
+        <div class="ver-profile-avatar" *ngIf="profileLoading">…</div>
+        <div class="ver-profile-avatar" *ngIf="!profileLoading && profileDetail">{{ profileInitial }}</div>
+        <div class="ver-profile-titles">
+          <h2>PSW profile</h2>
+          <p class="ver-profile-id">User ID: {{ profileUserId }}</p>
+        </div>
+        <button type="button" class="ver-profile-close" (click)="closeProfile()" aria-label="Close">×</button>
+      </div>
+      <div *ngIf="profileLoading" class="ver-profile-loading">Loading profile…</div>
+      <div *ngIf="!profileLoading && profileDetail" class="ver-profile-body">
+        <ng-container *ngFor="let sec of profileSections()">
+          <section class="ver-profile-section">
+            <h3 class="ver-profile-section-title">{{ sec.title }}</h3>
+            <div class="ver-profile-section-rows">
+              <div *ngFor="let row of sec.rows" class="ver-profile-field">
+                <div class="ver-profile-key">{{ row.label }}</div>
+                <pre *ngIf="row.isStructured" class="ver-profile-json">{{ formatProfileCell(row.value, row.key) }}</pre>
+                <div
+                  *ngIf="!row.isStructured && isProfileFileIdRow(row)"
+                  class="ver-profile-val ver-profile-file"
+                >
+                  <code class="ver-profile-file-id">{{ formatProfileCell(row.value, row.key) }}</code>
+                  <button
+                    type="button"
+                    class="btn-view-doc"
+                    (click)="openProfileDocument(row.value)"
+                    [disabled]="fileOpeningId === (row.value + '')"
+                  >
+                    {{ fileOpeningId === (row.value + '') ? 'Opening…' : 'View document' }}
+                  </button>
+                </div>
+                <div *ngIf="!row.isStructured && !isProfileFileIdRow(row)" class="ver-profile-val">
+                  {{ formatProfileCell(row.value, row.key) }}
+                </div>
+              </div>
+            </div>
+          </section>
+        </ng-container>
+      </div>
+      <div class="modal-actions ver-profile-actions">
+        <button type="button" class="btn btn-cancel" (click)="closeProfile()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div *ngIf="rejectPswId" class="modal" (click)="cancelReject()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Reject Verification</h2>
+      <p class="modal-description">
+        Please provide a reason for rejecting this verification request.
+      </p>
+      <textarea 
+        [(ngModel)]="rejectReason" 
+        placeholder="Enter rejection reason..."
+        maxlength="500"
+      ></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" (click)="cancelReject()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-reject" (click)="submitReject()">
+          Confirm Reject
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

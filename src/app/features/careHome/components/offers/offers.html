@@ -1,0 +1,140 @@
+<app-navbar></app-navbar>
+
+<div class="carehome-offers-page">
+  <!-- Header Banner -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>My Job Offers</h1>
+      <p>Manage and track your published job opportunities</p>
+    </div>
+    <div class="header-pattern"></div>
+  </div>
+
+  <main class="container">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="page-title">
+        <h2>Posted Offers</h2>
+        <span class="offer-count" *ngIf="!loading && offers.length > 0">{{ offers.length }} offer(s)</span>
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" class="refresh-btn" (click)="load()" [disabled]="loading">
+          <span class="refresh-icon" [class.spinning]="loading">🔄</span>
+          {{ loading ? 'Loading...' : 'Refresh' }}
+        </button>
+        <button type="button" class="create-btn" (click)="goToCreateOffer()">
+          <i class="fas fa-plus"></i>
+          Create Offer
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="state-card loading">
+        <div class="spinner"></div>
+        <p>Loading your offers...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (!loading && error) {
+      <div class="state-card error">
+        <i class="fas fa-exclamation-circle"></i>
+        <h3>Error Loading Offers</h3>
+        <p>{{ error }}</p>
+        <button type="button" class="btn btn-primary" (click)="load()">
+          <i class="fas fa-redo"></i> Try Again
+        </button>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!loading && !error && offers.length === 0) {
+      <div class="state-card empty">
+        <div class="empty-icon">📋</div>
+        <h3>No Offers Yet</h3>
+        <p>Start by creating your first job offer to attract care professionals.</p>
+        <button type="button" class="create-btn" (click)="goToCreateOffer()">
+          <i class="fas fa-plus"></i> Create Your First Offer
+        </button>
+      </div>
+    }
+
+    <!-- Offers Grid -->
+    @if (!loading && !error && offers.length > 0) {
+      <div class="offers-grid">
+        @for (offer of offers; track offer.id) {
+          <article class="offer-card">
+            <div class="card-header">
+              <div class="offer-icon">💼</div>
+              <div class="offer-info">
+                <h3>{{ getTitle(offer) }}</h3>
+                <span class="status-badge" [class.active]="offer.isActive !== false" [class.inactive]="offer.isActive === false">
+                  {{ getStatus(offer) }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="card-body">
+              @if (offer.description) {
+                <p class="description">{{ offer.description }}</p>
+              }
+              
+              <div class="info-list">
+                <div class="info-row">
+                  <span class="info-label">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Address
+                  </span>
+                  <span class="info-value">{{ getAddress(offer) }}</span>
+                </div>
+                
+                @if (offer.hourlyRate != null) {
+                  <div class="info-row">
+                    <span class="info-label">
+                      <i class="fas fa-pound-sign"></i>
+                      Hourly Rate
+                    </span>
+                    <span class="info-value rate-value">£{{ offer.hourlyRate }}/hr</span>
+                  </div>
+                }
+                
+                @if (offer.shifts && offer.shifts.length > 0) {
+                  <div class="info-row">
+                    <span class="info-label">
+                      <i class="fas fa-calendar-alt"></i>
+                      Shifts
+                    </span>
+                    <span class="info-value">{{ getShiftDates(offer) }}</span>
+                  </div>
+                }
+              </div>
+              
+              @if (offer.shifts && offer.shifts.length > 0) {
+                <div class="shift-count-badge">
+                  <span class="shift-icon">📆</span>
+                  <span>{{ getShiftCount(offer) }} shift(s) total</span>
+                </div>
+              }
+            </div>
+            
+            <div class="card-footer">
+              <button type="button" class="btn btn-outline" (click)="editOffer(offer)">
+                <i class="fas fa-edit"></i>
+                Edit
+              </button>
+              <button type="button" class="btn btn-primary" (click)="viewApplications(offer)">
+                <i class="fas fa-users"></i>
+                View Applications
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </main>
+</div>
+
+<app-footer></app-footer>
+

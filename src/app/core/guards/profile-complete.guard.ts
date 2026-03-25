@@ -1,0 +1,63 @@
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
+
+export const profileCompleteGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  console.log('=== PROFILE GUARD START ===');
+  console.log('Profile guard - checking authentication...');
+  
+  // Check if user is authenticated
+  if (!authService.isAuthenticated()) {
+    console.log('Profile guard - user not authenticated, redirecting to login');
+    return router.createUrlTree(['/login']);
+  }
+
+  console.log('Profile guard - user is authenticated, checking role...');
+
+  // Check if user is PSW and needs profile completion
+  const userRole = authService.getUserRole();
+  const token = authService.getToken();
+  
+  console.log('Profile guard - user role:', userRole, 'has token:', !!token);
+  
+  if (userRole === 'psw') {
+    // Check both server profile and localStorage flag
+    const profileCompleteFromServer = authService.getUserProfile()?.isProfileCompleted;
+    const profileCompleteFromStorage = authService.isProfileComplete();
+    const verificationStatus = authService.getVerificationStatus();
+    
+    console.log('Profile guard FINAL check:');
+    console.log('- Server profile complete:', profileCompleteFromServer);
+    console.log('- Storage profile complete:', profileCompleteFromStorage);
+    console.log('- Verification status:', verificationStatus);
+    
+    // Allow access if:
+    // 1. Server says profile is complete, OR
+    // 2. LocalStorage says profile is complete, OR  
+    // 3. Verification status is pending/approved (means profile was submitted)
+    // BUT NOT if verification status is 'None' (means new user who hasn't submitted profile)
+    const isProfileComplete = profileCompleteFromServer || 
+                            profileCompleteFromStorage || 
+                            (verificationStatus === 'pending' || verificationStatus === 'approved');
+    
+    const needsCompleteProfile = verificationStatus === 'None' || !isProfileComplete;
+    
+    console.log('- Final decision (needs complete profile?):', needsCompleteProfile);
+    
+    if (needsCompleteProfile) {
+      console.log('REDIRECTING to complete-profile - profile not completed or verification status is None');
+      console.log('=== PROFILE GUARD END (REDIRECT) ===');
+      return router.createUrlTree(['/psw/complete-profile']);
+    }
+    
+    console.log('ALLOWING access to PSW routes');
+    console.log('=== PROFILE GUARD END (ALLOW) ===');
+  }
+
+  return true;
+};

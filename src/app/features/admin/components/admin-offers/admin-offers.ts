@@ -1,0 +1,196 @@
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { AdminService } from '../../../../core/services/admin.service';
+import { OffersService } from '../../../../core/services/offers.service';
+import {
+  clientFilterSearch,
+  clientPaginate,
+  clientTotalPages,
+} from '../../../../core/utils/admin-client-list';
+
+interface OfferItem {
+  offerId?: string;
+  id?: string;
+  title?: string;
+  jobTitle?: string;
+  description?: string;
+  address?: string;
+  hourlyRate?: number;
+  careHomeId?: string;
+  careHomeName?: string;
+  shifts: ShiftItem[];
+  createdAt?: string;
+  isActive?: boolean;
+}
+
+interface ShiftItem {
+  shiftId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isBooked: boolean;
+}
+
+@Component({
+  selector: 'app-admin-offers',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './admin-offers.html',
+  styleUrls: ['./admin-offers.scss', '../../admin-common.scss'],
+})
+export class AdminOffers implements OnInit {
+  private admin = inject(AdminService);
+  private offersService = inject(OffersService);
+  private cdr = inject(ChangeDetectorRef);
+
+  private allOffers: OfferItem[] = [];
+
+  offers: OfferItem[] = [];
+  isLoading = true;
+  error: string | null = null;
+
+  searchInput = '';
+  pageIndex = 0;
+  pageSize = 12;
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  get filteredCount(): number {
+    return this.filteredAll.length;
+  }
+
+  get totalPages(): number {
+    return clientTotalPages(this.filteredCount, this.pageSize);
+  }
+
+  private get filteredAll(): OfferItem[] {
+    return clientFilterSearch(this.allOffers, this.searchInput, (o) =>
+      [
+        o.title || o.jobTitle || '',
+        o.description || '',
+        o.address || '',
+        o.careHomeName || '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+    );
+  }
+
+  load(): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.admin.getAdminOffersPaged().subscribe({
+      next: (response: any) => {
+        console.log('API Response:', response);
+        const extractedItems = response.items || response.data || (Array.isArray(response) ? response : []);
+        this.allOffers = Array.isArray(extractedItems) ? extractedItems : [];
+        this.isLoading = false;
+        this.applyLocalPage();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading offers:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private applyLocalPage(): void {
+    const list = this.filteredAll;
+    this.offers = clientPaginate(list, this.pageIndex, this.pageSize);
+    if (this.pageIndex > 0 && this.offers.length === 0 && list.length > 0) {
+      this.pageIndex = 0;
+      this.offers = clientPaginate(list, 0, this.pageSize);
+    }
+  }
+
+  private searchTimeout: any;
+
+  onSearch(): void {
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.pageIndex = 0;
+      this.applyLocalPage();
+      this.cdr.detectChanges();
+    }, 250);
+  }
+
+  goPrev(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.applyLocalPage();
+      this.cdr.detectChanges();
+    }
+  }
+
+  goNext(): void {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.applyLocalPage();
+      this.cdr.detectChanges();
+    }
+  }
+
+  onPageSizeChange(event: any): void {
+    const size = +event.target.value;
+    this.pageSize = size;
+    this.pageIndex = 0;
+    this.applyLocalPage();
+    this.cdr.detectChanges();
+  }
+
+  applyFilters(): void {
+    this.pageIndex = 0;
+    this.applyLocalPage();
+    this.cdr.detectChanges();
+  }
+
+  get hasAnyLoaded(): boolean {
+    return this.allOffers.length > 0;
+  }
+
+  getTitle(offer: OfferItem): string {
+    return offer.title || offer.jobTitle || 'Untitled Offer';
+  }
+
+  getCareHomeName(offer: OfferItem): string {
+    return offer.careHomeName || 'N/A';
+  }
+
+  getAddress(offer: OfferItem): string {
+    return offer.address || 'N/A';
+  }
+
+  getHourlyRate(offer: OfferItem): string {
+    const rate = offer.hourlyRate || 0;
+    return rate > 0 ? `£${rate}/hr` : 'N/A';
+  }
+
+  getShiftCount(offer: OfferItem): number {
+    return offer.shifts?.length ?? 0;
+  }
+
+  getShiftDates(offer: OfferItem): string {
+    if (!offer.shifts || offer.shifts.length === 0) return 'No shifts';
+
+    const dates = offer.shifts.slice(0, 3).map((s) =>
+      new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    );
+
+    if (offer.shifts.length > 3) {
+      return dates.join(', ') + ` +${offer.shifts.length - 3} more`;
+    }
+    return dates.join(', ');
+  }
+
+  getStatus(offer: OfferItem): string {
+    return (offer.isActive ?? false) ? 'Active' : 'Inactive';
+  }
+}
+

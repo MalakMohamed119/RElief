@@ -1,0 +1,86 @@
+<div class="login-container">
+  <div class="logo-wrapper">
+    <div class="logo-box">
+      <img src="assets/logo.jpg" alt="Care Home Logo">
+    </div>
+    <p class="subtitle">Care Management Platform</p>
+  </div>
+
+  <div class="login-card">
+    <h3>Welcome Back</h3>
+    <p>Sign in to your account</p>
+
+    <div *ngIf="sessionExpired" class="session-expired-msg">
+      Your session expired. Please sign in again.
+    </div>
+
+    <div *ngIf="loginError" class="login-error-msg">
+      {{ loginError }}
+    </div>
+
+<div class="tab-container tab-container--double">
+      <button type="button" routerLink="/login" [class.active]="isActive('/login')" class="tab-btn">Login</button>
+      <button type="button" routerLink="/register" [class.active]="isActive('/register')" class="tab-btn">Register</button>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Email -->
+      <div class="input-group">
+        <label>Email</label>
+        <input 
+          type="email" 
+          formControlName="email"
+          [class.is-invalid]="hasError('email', 'required') || hasError('email', 'email')"
+          placeholder="your@email.com">
+        <div *ngIf="hasError('email', 'required')" class="error-message">
+          Email is required
+        </div>
+        <div *ngIf="hasError('email', 'email')" class="error-message">
+          Please enter a valid email
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group password-group">
+        <label>Password</label>
+        <div class="password-input-container">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            formControlName="password"
+            [class.is-invalid]="hasError('password', 'required')"
+            placeholder="Enter your password">
+          <button 
+            type="button" 
+            class="toggle-password" 
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            <i [class]="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+          </button>
+        </div>
+        <div *ngIf="hasError('password', 'required')" class="error-message">
+          Password is required
+        </div>
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div class="form-options">
+        <label class="remember-me">
+          <input type="checkbox" formControlName="rememberMe">
+          <span>Remember me</span>
+        </label>
+        <a routerLink="/forgot-password" class="forgot-password">Forgot password?</a>
+      </div>
+
+      <button 
+        type="submit" 
+        class="sign-in-btn"
+        [disabled]="isLoading">
+        @if (!isLoading) {
+          <span>Sign In</span>
+        } @else {
+          <span>Signing In...</span>
+        }
+      </button>
+    </form>
+  </div>
+</div>

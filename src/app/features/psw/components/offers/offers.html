@@ -1,0 +1,205 @@
+<app-psw-nav></app-psw-nav>
+<app-toast></app-toast>
+
+<div class="psw-offers-page">
+  <!-- Header Banner -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Available Offers</h1>
+      <p>Browse and apply for care home job opportunities</p>
+    </div>
+    <div class="header-pattern"></div>
+  </div>
+
+  <main class="container">
+    <!-- Search and Actions -->
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          placeholder="Search offers by title or address"
+          [value]="search"
+          (input)="onSearchChange($any($event.target).value)" />
+      </div>
+      <a routerLink="/psw/history" class="btn btn-secondary">
+        <i class="fas fa-history"></i>
+        My Applications
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="state-card loading">
+      <div class="spinner"></div>
+      <p>Loading offers...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!isLoading && error" class="state-card error">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadOffers()">
+        <i class="fas fa-redo"></i> Retry
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && offers.length === 0" class="state-card empty">
+      <i class="fas fa-briefcase"></i>
+      <h3>No offers available</h3>
+      <p>Try adjusting your search or check again later for new opportunities.</p>
+    </div>
+
+    <!-- Offers Grid -->
+    <div class="offers-grid" *ngIf="!isLoading && !error && offers.length > 0">
+      <article
+        class="offer-card"
+        *ngFor="let offer of offers">
+        <div class="card-header">
+          <h2>{{ offer.title || 'Untitled offer' }}</h2>
+          <p class="address" *ngIf="offer.address">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ offer.address }}
+          </p>
+        </div>
+        <div class="card-body">
+          <p class="description" *ngIf="offer.description">
+            {{ offer.description | slice:0:150 }}{{ offer.description.length > 150 ? '...' : '' }}
+          </p>
+          <div class="meta-grid">
+            <div class="meta-item" *ngIf="offer.hourlyRate != null">
+              <div class="meta-icon">
+                <i class="fas fa-pound-sign"></i>
+              </div>
+              <div class="meta-content">
+                <span class="meta-label">Hourly Rate</span>
+                <span class="meta-value">£{{ offer.hourlyRate | number:'1.2-2' }}/hr</span>
+              </div>
+            </div>
+            <div class="meta-item" *ngIf="offer.shifts && offer.shifts.length">
+              <div class="meta-icon">
+                <i class="far fa-calendar-alt"></i>
+              </div>
+              <div class="meta-content">
+                <span class="meta-label">Next Shift</span>
+                <span class="meta-value">
+                  {{ offer.shifts[0].date || offer.shifts[0].Date | date:'MMM d, y' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button
+            class="btn btn-outline"
+            type="button"
+            (click)="openDetails(offer)">
+            <i class="fas fa-eye"></i>
+            View Details
+          </button>
+<button *ngIf="offer.shifts.length"
+            class="btn btn-primary"
+            type="button"
+[disabled]="applyingOfferId === offer.id"
+            (click)="apply(offer)">
+            <i class="fas" [ngClass]="applyingOfferId === offer.id ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+            {{ applyingOfferId === offer.id ? 'Applying...' : 'Apply Now' }}
+          </button>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- Details Modal with Shift Selection -->
+  <div *ngIf="selectedOffer" class="modal-overlay" (click)="closeDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>{{ selectedOffer.title || 'Offer details' }}</h2>
+        <button type="button" class="close-btn" (click)="closeDetails()">
+          <i class="fas fa-times"></i>
+        </button>
+      </header>
+      
+      <!-- Loading Details -->
+      <div *ngIf="isLoadingDetails" class="modal-loading">
+        <div class="spinner"></div>
+        <p>Loading offer details...</p>
+      </div>
+      
+      <!-- Offer Details -->
+      <section class="modal-body" *ngIf="!isLoadingDetails && selectedOffer">
+        <p *ngIf="selectedOffer.description" class="offer-description">{{ selectedOffer.description }}</p>
+        
+        <div class="detail-row" *ngIf="selectedOffer.address">
+          <span class="label">Address</span>
+          <span class="value">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ selectedOffer.address }}
+          </span>
+        </div>
+        
+        <div class="detail-row" *ngIf="selectedOffer.hourlyRate != null">
+          <span class="label">Hourly Rate</span>
+          <span class="value rate">£{{ selectedOffer.hourlyRate | number:'1.2-2' }}/hour</span>
+        </div>
+        
+        <!-- Shift Selection -->
+        <div class="shifts-section" *ngIf="selectedOffer.shifts && selectedOffer.shifts.length">
+          <div class="shifts-header">
+            <span class="label">
+              <i class="fas fa-calendar-check"></i> Select Shifts
+            </span>
+            <span class="selected-count">{{ selectedShiftIds.length }} selected</span>
+          </div>
+          <ul class="shifts-list">
+            <li 
+              *ngFor="let s of selectedOffer.shifts" 
+              class="shift-item"
+              [class.selected]="isShiftSelected(s.shiftId || s.ShiftId || s.id || s.Id)"
+              (click)="toggleShift(s.shiftId || s.ShiftId || s.id || s.Id)">
+              <div class="shift-checkbox">
+                <i class="fas" [class.fa-check]="isShiftSelected(s.shiftId || s.ShiftId || s.id || s.Id)"></i>
+              </div>
+              <div class="shift-details">
+                <span class="shift-date">
+                  <i class="far fa-calendar-alt"></i>
+                  {{ (s.date || s.Date) | date:'EEEE, MMM d, y' }}
+                </span>
+                <span class="shift-time" *ngIf="s.startTime || s.start || s.Start">
+                  <i class="far fa-clock"></i>
+                  {{ (s.startTime || s.start || s.Start) | slice:0:5 }}
+                  -
+                  {{ (s.endTime || s.end || s.End) | slice:0:5 }}
+                </span>
+                <span class="shift-status" *ngIf="s.status || s.Status">
+                  {{ s.status || s.Status }}
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- No Shifts Available -->
+        <div class="no-shifts" *ngIf="!selectedOffer.shifts || selectedOffer.shifts.length === 0">
+          <i class="fas fa-calendar-times"></i>
+          <p>No shifts available for this offer.</p>
+        </div>
+      </section>
+      
+      <footer class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="closeDetails()">Cancel</button>
+        <button 
+          class="btn btn-primary" 
+          type="button"
+          [disabled]="applyingOfferId === selectedOffer.id || selectedShiftIds.length === 0"
+          (click)="apply(selectedOffer)">
+          <i class="fas" [ngClass]="applyingOfferId === selectedOffer.id ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+          {{ applyingOfferId === selectedOffer.id ? 'Applying...' : 'Apply for ' + selectedShiftIds.length + ' shift(s)' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</div>
+

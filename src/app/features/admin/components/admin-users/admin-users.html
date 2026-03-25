@@ -1,0 +1,206 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <div class="header-left">
+      <a routerLink="/admin/dashboard" class="back-btn" title="Back to Dashboard">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <h1>Users</h1>
+    </div>
+    <button type="button" class="refresh-btn admin-refresh-btn" (click)="load()" [disabled]="isLoading">
+      <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isLoading"></i>
+      {{ isLoading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <div class="admin-toolbar admin-toolbar--users">
+    <div class="search-wrap">
+      <label for="u-search">Search</label>
+      <input
+        id="u-search"
+        class="search-input"
+        type="search"
+        [(ngModel)]="searchInput"
+        (input)="onSearch()"
+        placeholder="Name, email, id…"
+      />
+    </div>
+    <div class="toolbar-field">
+      <label for="u-role">Role contains</label>
+      <input
+        id="u-role"
+        class="search-input"
+        type="text"
+        [(ngModel)]="roleFilter"
+        (input)="onSearch()"
+        placeholder="e.g. psw"
+      />
+    </div>
+    <div class="toolbar-field toolbar-field-page">
+      <label for="u-page-size">Per page</label>
+      <select
+        id="u-page-size"
+        class="form-select"
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange(+ $event)"
+      >
+        <option [value]="8">8</option>
+        <option [value]="12">12</option>
+        <option [value]="24">24</option>
+        <option [value]="48">48</option>
+      </select>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="btn-apply" (click)="applyFilters()" [disabled]="isLoading">
+        Apply filters
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <div>Loading users…</div>
+  </div>
+
+  <div *ngIf="!isLoading && error" class="error">
+    <strong>Error:</strong> {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount === 0 && hasAnyLoaded" class="empty">
+    <div class="empty-icon">🔍</div>
+    <div>No rows match your filters</div>
+    <div class="empty-subtitle">Try clearing search or changing filters</div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount === 0 && !hasAnyLoaded" class="empty">
+    <div class="empty-icon">👤</div>
+    <div>No users returned</div>
+    <div class="empty-subtitle">Refresh or check permissions</div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && rows.length > 0" class="users-table-wrap">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Name / label</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td class="td-strong">{{ pickLabel(row) }}</td>
+          <td>{{ pickEmail(row) }}</td>
+          <td>{{ pickRole(row) }}</td>
+          <td>
+            <button type="button" class="link-profile" (click)="openProfile(row)">
+              View profile
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount > 0" class="pagination-bar">
+    <span class="pagination-info">
+      Showing {{ rows.length }} of {{ filteredCount }} · Page {{ pageIndex + 1 }} of {{ totalPages }}
+    </span>
+    <div class="pagination-controls">
+      <button type="button" class="pagination-btn" (click)="goPrev()" [disabled]="pageIndex === 0 || isLoading">
+        Previous
+      </button>
+      <button
+        type="button"
+        class="pagination-btn"
+        (click)="goNext()"
+        [disabled]="pageIndex >= totalPages - 1 || isLoading"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="selectedUserId" class="modal" (click)="closeProfile()">
+    <div class="modal-content profile-modal" (click)="$event.stopPropagation()">
+      <div class="profile-modal-head">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" *ngIf="profileLoading">…</div>
+          <img
+            *ngIf="!profileLoading && profileHeaderPhoto as photo"
+            class="profile-head-thumb"
+            [src]="photo"
+            alt=""
+          />
+          <div class="profile-avatar" *ngIf="!profileLoading && profileDetail && !profileHeaderPhoto">
+            {{ profileInitial }}
+          </div>
+        </div>
+        <div class="profile-head-text">
+          <h2>{{ profileHeadline }}</h2>
+          <p class="modal-meta">User ID: {{ selectedUserId }}</p>
+        </div>
+        <button type="button" class="modal-close" (click)="closeProfile()" aria-label="Close">×</button>
+      </div>
+
+      <div *ngIf="profileLoading" class="loading-inline">Loading profile…</div>
+
+      <div *ngIf="!profileLoading && profileDetail" class="profile-body">
+        <ng-container *ngFor="let sec of profileSections()">
+          <section class="profile-section">
+            <h3 class="profile-section-title">{{ sec.title }}</h3>
+            <div class="profile-section-rows">
+              <ng-container *ngFor="let row of sec.rows">
+                <div
+                  *ngIf="showProfileRow(row)"
+                  class="profile-field"
+                  [class.profile-field--photo]="isProfileImageUrlRow(row)"
+                >
+                  <div class="profile-field-label">{{ row.label }}</div>
+                  <div class="profile-field-cell">
+                    <a
+                      *ngIf="isProfileImageUrlRow(row)"
+                      class="profile-photo-link"
+                      [href]="row.value"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img class="profile-inline-photo" [src]="row.value" alt="" />
+                    </a>
+                    <pre *ngIf="row.isStructured && !isProfileImageUrlRow(row)" class="profile-json">{{
+                      formatProfileCell(row.value, row.key)
+                    }}</pre>
+                    <div
+                      *ngIf="!row.isStructured && !isProfileImageUrlRow(row) && isProfileFileIdRow(row)"
+                      class="profile-field-value profile-field-file"
+                    >
+                      <code class="profile-file-id">{{ formatProfileCell(row.value, row.key) }}</code>
+                      <button
+                        type="button"
+                        class="btn-view-doc"
+                        (click)="openProfileDocument(row.value)"
+                        [disabled]="fileOpeningId === (row.value + '')"
+                      >
+                        {{ fileOpeningId === (row.value + '') ? 'Opening…' : 'View document' }}
+                      </button>
+                    </div>
+                    <div
+                      *ngIf="!row.isStructured && !isProfileImageUrlRow(row) && !isProfileFileIdRow(row)"
+                      class="profile-field-value"
+                    >
+                      {{ formatProfileCell(row.value, row.key) }}
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </section>
+        </ng-container>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeProfile()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

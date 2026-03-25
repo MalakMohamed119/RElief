@@ -1,0 +1,121 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <div class="header-left">
+      <a routerLink="/admin/dashboard" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+      <h1>Job Applications</h1>
+    </div>
+    <button type="button" class="refresh-btn" (click)="load()" [disabled]="isLoading">
+      <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isLoading"></i>
+      {{ isLoading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <div class="admin-toolbar">
+    <div class="search-wrap">
+      <label for="app-search">Search</label>
+      <input id="app-search" class="search-input" type="search" [(ngModel)]="searchInput" (input)="onSearch()" placeholder="PSW name, offer, care home…">
+    </div>
+    <div class="toolbar-field">
+      <label for="app-page-size">Page size</label>
+      <select id="app-page-size" class="form-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+        <option [value]="8">8</option>
+        <option [value]="12">12</option>
+        <option [value]="24">24</option>
+      </select>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="btn-apply" (click)="applyFilters()" [disabled]="isLoading">Apply</button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <div>Loading applications...</div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && applications.length > 0" class="cards-grid">
+    <div *ngFor="let app of applications" class="offer-card profile-card" [class.processing]="isProcessing(app)">
+      <div class="card-header">
+        <div class="offer-icon psw-avatar">👤</div>
+        <div class="offer-info">
+          <h3>{{ getPswName(app) }}</h3>
+          <span class="status-badge" [ngClass]="displayStatus(app).toLowerCase()">
+            {{ displayStatus(app) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-label">📋 Offer</span>
+          <span class="info-value">{{ getOfferTitle(app) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🏠 Care Home</span>
+          <span class="info-value">{{ getCareHomeName(app) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📅 Shift</span>
+          <span class="info-value">{{ getShiftInfo(app) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">⏱ Applied</span>
+          <span class="info-value">{{ getSubmittedDate(app) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📧 Email</span>
+          <span class="info-value">{{ app.pswEmail }}</span>
+        </div>
+
+        <div class="card-actions-grid" *ngIf="displayStatus(app) === 'Pending'">
+          <button class="btn-approve-full" (click)="approve(app)" [disabled]="isProcessing(app)">
+            <i class="fa-solid fa-check"></i> Approve
+          </button>
+          <button class="btn-reject-full" (click)="openReject(app)" [disabled]="isProcessing(app)">
+            <i class="fa-solid fa-xmark"></i> Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && filteredCount > 0" class="pagination-bar">
+    <span class="pagination-info">Showing {{ applications.length }} of {{ filteredCount }}</span>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="goPrev()" [disabled]="pageIndex === 0">Previous</button>
+      <button class="pagination-btn" (click)="goNext()" [disabled]="pageIndex >= totalPages - 1">Next</button>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div *ngIf="selectedRequestId" class="reject-modal-overlay" (click)="cancelReject()">
+    <div class="reject-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Reject Application</h3>
+        <button class="close-btn" (click)="cancelReject()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Please enter a reason for rejecting this application:</p>
+        <textarea 
+          [(ngModel)]="rejectReason" 
+          placeholder="Enter rejection reason..."
+          rows="4"
+          class="reject-reason-input">
+        </textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="cancelReject()">Cancel</button>
+        <button 
+          class="btn-reject" 
+          (click)="submitReject()" 
+          [disabled]="!rejectReason.trim() || rejectingId">
+          <i class="fa-solid fa-xmark" *ngIf="!rejectingId"></i>
+          <i class="fa-solid fa-spinner fa-spin" *ngIf="rejectingId"></i>
+          {{ rejectingId ? 'Rejecting...' : 'Reject' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

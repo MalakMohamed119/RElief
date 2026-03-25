@@ -1,0 +1,56 @@
+<nav class="relief-navbar">
+  <app-toast></app-toast>
+  <div class="nav-container">
+    
+    <a class="nav-brand" routerLink="/psw">
+      <div class="logo-wrapper">
+        <img src="assets/logo.jpg" alt="Relief Logo">
+      </div>
+      <span>Relief</span>
+    </a>
+
+    <div class="nav-actions">
+      
+      <a routerLink="/psw/offers" routerLinkActive="active-btn" class="nav-item" title="Offers">
+        <i class="fa-solid fa-briefcase"></i>
+        <span class="nav-label">Offers</span>
+      </a>
+
+      <a routerLink="/psw/history" routerLinkActive="active-btn" class="nav-item" title="History">
+        <i class="fa-solid fa-list"></i>
+        <span class="nav-label">History</span>
+      </a>
+
+      <a routerLink="/psw/notifications" routerLinkActive="active-btn" class="nav-item" title="Notifications">
+        <div class="notification-box">
+          <i class="fa-solid fa-bell"></i>
+          <span class="badge"></span>
+        </div>
+        <span class="nav-label">Notifications</span>
+      </a>
+
+      <a routerLink="/psw/profile" routerLinkActive="active-btn" class="nav-item" title="Profile">
+        <div class="profile-icon-wrapper" style="position: relative; display: inline-block;">
+          <i class="fa-solid fa-user-gear"></i>
+          
+          @if (userProfile$ | async; as profile) {
+            @if ((profile.verificationStatus === 'Rejected') || (!profile.isProfileCompleted && profile.verificationStatus !== 'Pending')) {
+              <span class="profile-warning-badge">
+                <i class="fa-solid fa-exclamation"></i>
+              </span>
+            }
+          }
+        </div>
+        <span class="nav-label">Profile</span>
+      </a>
+
+      <div class="divider"></div>
+
+      <button (click)="onLogout()" class="logout-btn" title="Logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span class="nav-label">Logout</span>
+      </button>
+
+    </div>
+  </div>
+</nav>

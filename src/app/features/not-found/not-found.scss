@@ -1,0 +1,118 @@
+// Variables
+$primary-color: #034a90bb;
+$gradient: linear-gradient(135deg, #0b96b1 0%, #0b71a5 50%, #0b4897 100%);
+$bg-light: #f8fafc;
+$text-color: #2c3e50;
+$text-gray: #64748b;
+
+.not-found-container {
+    min-height: 100vh;
+    background-color: $bg-light;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.error-container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    padding: 60px 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 800;
+    margin: 0 0 10px;
+    background: $gradient;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.error-message {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $text-color;
+    margin-bottom: 20px;
+}
+
+.error-description {
+    font-size: 1.1rem;
+    color: $text-gray;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.logButton {
+    background: $gradient;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(11, 72, 151, 0.2);
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 18px;
+
+    &:hover {
+        box-shadow: 0 8px 25px rgba(11, 72, 151, 0.3);
+        opacity: 0.95;
+        background: rgb(24, 100, 139);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 6rem;
+    }
+    
+    .error-message {
+        font-size: 1.75rem;
+    }
+    
+    .error-description {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-container {
+        padding: 40px 20px;
+    }
+    
+    .error-code {
+        font-size: 5rem;
+    }
+    
+    .error-message {
+        font-size: 1.5rem;
+    }
+}
+

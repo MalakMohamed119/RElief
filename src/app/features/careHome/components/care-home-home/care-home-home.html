@@ -1,0 +1,178 @@
+<app-navbar></app-navbar>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1>Perfect Home Care for Your Loved Ones</h1>
+      <p>We provide the best professional caregivers to take care of your family at home</p>
+      <a class="cta-button" (click)="scrollToRequestForm()">
+        <i class="fas fa-user-nurse"></i> Request a Caregiver 
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Services Section -->
+<section class="services">
+  <div class="container">
+    <h2>Our Services</h2>
+    <div class="services-grid">
+      <div class="service-card" *ngFor="let service of services">
+        <i class="fas fa-3x" [class]="getServiceIcon(service.icon)"></i>
+        <h3>{{service.title}}</h3>
+        <p>{{service.description}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+  <div class="container">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-icon">
+          <i class="fas fa-search-plus"></i>
+        </div>
+        <h3>Choose a Service</h3>
+        <p>Select from our range of services that fit your needs</p>
+      </div>
+      <div class="step">
+        <div class="step-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h3>Specify Requirements</h3>
+        <p>Tell us about your specific care needs and preferences</p>
+      </div>
+      <div class="step">
+        <div class="step-icon">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <h3>Get Matched</h3>
+        <p>We'll contact you within 24 hours to discuss your needs</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Request Form (Create Job Offer) -->
+<section id="request-form" class="request-form">
+  <div class="container">
+    <h2>Create Request (Job Offer)</h2>
+    <div class="form-and-map-row">
+      <div class="form-col">
+        <form [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <div class="input-wrapper">
+              <i class="fas fa-heading"></i>
+              <input type="text" id="title" formControlName="title" placeholder="Offer title">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <div class="input-wrapper">
+              <i class="fas fa-align-left"></i>
+              <textarea id="description" formControlName="description" placeholder="Describe the role or requirements" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="address">Address <span class="optional-label">(optional – type here or pick on map)</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" id="address" formControlName="address" placeholder="Type address or click on the map">
+            </div>
+            @if (addressOrLocationError) {
+              <div class="error-message">Enter an address or pick a location on the map.</div>
+            }
+          </div>
+          <div class="form-group">
+            <label for="hourlyRate">Hourly Rate</label>
+            <div class="input-wrapper">
+              <i class="fas fa-coins"></i>
+              <input type="number" id="hourlyRate" formControlName="hourlyRate" placeholder="0" min="0" step="0.01">
+            </div>
+          </div>
+
+          <div class="shifts-section">
+            <div class="shifts-header">
+              <label>Shifts</label>
+              <button type="button" class="add-shift-btn" (click)="addShift()">
+                <i class="fas fa-plus"></i> Add shift
+              </button>
+            </div>
+            <div formArrayName="shifts" class="shifts-list">
+              @for (shift of shifts.controls; track $index) {
+                <div class="shift-block" [formGroupName]="$index">
+                  <div class="shift-row">
+                    <div class="form-group compact">
+                      <label>Date</label>
+                      <input type="date" formControlName="date">
+                    </div>
+                    <div class="form-group compact">
+                      <label>Start</label>
+                      <input type="time" formControlName="startTime">
+                    </div>
+                    <div class="form-group compact">
+                      <label>End</label>
+                      <input type="time" formControlName="endTime">
+                    </div>
+                    @if (shifts.length > 1) {
+                      <button type="button" class="remove-shift-btn" (click)="removeShift($index)" title="Remove shift">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" [disabled]="requestForm.invalid || isSubmitting">
+            <i class="fas fa-paper-plane"></i> {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}
+          </button>
+        </form>
+      </div>
+      <div class="map-col">
+        <div class="map-label">Pick location on map</div>
+        <div #mapContainer class="map-container"></div>
+        @if (!mapReady) {
+          <div class="map-loading">Loading map…</div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="container">
+    <h2>What Our Clients Say</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+        <div class="quote-icon">
+          <i class="fas fa-comment-dots"></i>
+        </div>
+        <div class="rating">
+          <span *ngFor="let i of [1,2,3,4,5]" [class.filled]="i <= testimonial.rating">
+            <i class="fas fa-star"></i>
+          </span>
+        </div>
+        <p class="testimonial-content">{{testimonial.content}}</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="author-info">
+            <strong>{{testimonial.name}}</strong>
+            <span>{{testimonial.role}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>
