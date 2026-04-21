@@ -290,7 +290,6 @@ export class PswProfile implements OnInit, OnDestroy {
     this.profileService.updateMyProfile(this.editModel).subscribe({
       next: () => {
         this.notifications.show('Profile updated successfully.', 'success');
-        this.authService.setProfileComplete();
         this.isSaving = false;
         this.loadProfile();
       },

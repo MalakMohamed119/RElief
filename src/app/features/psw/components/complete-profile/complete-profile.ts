@@ -26,7 +26,11 @@ export class PswCompleteProfile implements OnInit {
   form: FormGroup;
   isSubmitting = false;
   selectedFileNames: { [key: string]: string } = {};
-  previews: { [key: string]: string } = {}; // للمعاينة الفورية
+previews: { [key: string]: string } = {}; // للمعاينة الفورية
+
+  profileComplete: boolean = false;
+  verificationStatus: string | null = null;
+  rejectionReason: string | null = null;
 
   constructor() {
     this.form = this.fb.group({
@@ -93,8 +97,10 @@ export class PswCompleteProfile implements OnInit {
         console.log('Restored profile completion flag');
       }
     }
-    console.log('=== COMPLETE-PROFILE ngOnInit END ===');
-  }
+      console.log('=== COMPLETE-PROFILE ngOnInit END ===');
+      
+      this.loadProfileStatus();
+    }
 
   // Check if selected type needs two sides (ID or License)
   showTwoSides(): boolean {
@@ -259,5 +265,29 @@ export class PswCompleteProfile implements OnInit {
     // After skip, clear the needs profile completion flag and go to PSW dashboard
     this.authService.clearNeedsProfileCompletion();
     this.router.navigate(['/psw']); 
+  }
+
+  scrollToForm(): void {
+    const formElement = document.getElementById('formContent');
+    formElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  private loadProfileStatus(): void {
+    this.authService.loadUserProfile().subscribe({
+      next: (profile: any) => {
+        this.verificationStatus = profile?.verificationStatus ?? null;
+        this.rejectionReason = profile?.rejectionReason ?? null;
+        this.profileComplete = profile?.isProfileCompleted ?? false;
+        console.log('Profile status loaded:', {
+          status: this.verificationStatus, 
+          complete: this.profileComplete, 
+          reason: this.rejectionReason
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load profile status:', err);
+      }
+    });
   }
 }

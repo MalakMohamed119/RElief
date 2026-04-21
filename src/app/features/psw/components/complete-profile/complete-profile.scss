@@ -1,11 +1,28 @@
-// Professional Complete Profile Form Styles
+@use 'sass:color';
 
-$primary-color: #034a90bb;
-$gradient: linear-gradient(135deg, #0b96b1 0%, #0b71a5 50%, #0b4897 100%);
-$bg-light: #f8fafc;
+// Variables - Blue Theme
+$primary-color: #0b4897;
+$primary-light: #0b96b1;
+$primary-dark: #054779;
+$success-color: #0284c7;
+$success-light: #e0f2fe;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$text-light: #94a3b8;
 $text-gray: #64748b;
 $border-color: #e2e8f0;
+$bg-light: #f8fafc;
+$white: #ffffff;
 $card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$gradient: linear-gradient(135deg, $primary-light 0%, $primary-color 50%, $primary-dark 100%);
+$gradient-light: linear-gradient(135deg, $primary-light, #dbeafe);
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
 
 .complete-profile-container {
   min-height: 100vh;
@@ -38,7 +55,53 @@ $card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
   form {
-    margin-top: 24px;
+    margin-top: 0;
+  }
+
+  // Profile Alert Banners
+  .profile-alert {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: $radius-md;
+    margin-bottom: 1.5rem;
+    align-items: center;
+
+    &.alert-warning {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      i { color: #d97706; }
+      strong { color: #92400e; }
+      p { color: #78350f; }
+    }
+
+    &.alert-danger {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      i { color: #dc2626; }
+      strong { color: #991b1b; }
+      p { color: #7f1d1d; }
+    }
+
+    i {
+      flex-shrink: 0;
+      font-size: 1.25rem;
+    }
+
+    > div {
+      flex: 1;
+    }
+
+    strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.88rem;
+    }
   }
 
   // Checkbox row styling
@@ -132,7 +195,7 @@ $card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         display: flex;
         align-items: center;
         gap: 6px;
-        
+
         &::before {
           content: '';
           display: inline-block;
@@ -335,7 +398,7 @@ $card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
   .complete-profile-container .actions {
     flex-direction: column-reverse;
-    
+
     .btn {
       width: 100%;
       text-align: center;

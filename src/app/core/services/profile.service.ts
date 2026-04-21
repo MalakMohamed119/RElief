@@ -22,8 +22,26 @@ export class ProfileService {
   }
 
   /** PUT /api/profile – update current user's profile */
-  updateMyProfile(payload: UpdateProfileDto): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/api/profile`, payload);
+  updateMyProfile(payload: any): Observable<void> {
+    const formData = new FormData();
+    if (payload.firstName) formData.append('FirstName', payload.firstName);
+    if (payload.lastName) formData.append('LastName', payload.lastName);
+    if (payload.phoneNumber) formData.append('PhoneNumber', payload.phoneNumber);
+    if (payload.address) {
+      if (payload.address.apartmentNumber != null)
+        formData.append('Address.ApartmentNumber', String(payload.address.apartmentNumber));
+      if (payload.address.street)
+        formData.append('Address.Street', payload.address.street);
+      if (payload.address.city)
+        formData.append('Address.City', payload.address.city);
+      if (payload.address.state)
+        formData.append('Address.State', payload.address.state);
+      if (payload.address.postalCode)
+        formData.append('Address.PostalCode', payload.address.postalCode);
+      if (payload.address.country)
+        formData.append('Address.Country', payload.address.country);
+    }
+    return this.http.put<void>(`${this.apiUrl}/api/profile`, formData);
   }
 
   /** GET /api/profile/{id} – profile by ID (for viewing others) */

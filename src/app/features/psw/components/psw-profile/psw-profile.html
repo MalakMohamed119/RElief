@@ -49,7 +49,7 @@
               </span>
             </div>
 
-@if (!isProfileComplete && verificationStatus !== 'Approved' && verificationStatus !== 'Pending') {
+            @if (!isProfileComplete && verificationStatus !== 'Approved' && verificationStatus !== 'Pending' && verificationStatus !== 'Rejected') {
               <div class="profile-alert alert-warning">
                 <div class="alert-icon">
                   <i class="fas fa-exclamation-triangle"></i>
@@ -64,21 +64,16 @@
               </div>
             }
 
-            @if (isProfileComplete && (verificationStatus === 'rejected' || verificationStatus === 'Rejected')) {
-              <div class="profile-alert alert-danger">
-                <div class="alert-icon">
-                  <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <div class="alert-content">
-                  <p><strong>Profile Rejected</strong></p>
-                  <p><strong>Reason:</strong> {{ rejectionReason || 'No reason provided by admin' }}</p>
-                  <p>Your profile has been rejected. Please fix the issues and try again.</p>
-                  <a routerLink="/psw/complete-profile" class="btn btn-danger btn-sm">
-                    <i class="fas fa-redo"></i> Update & Try Again
-                  </a>
-                </div>
+            <div class="profile-alert alert-danger" *ngIf="verificationStatus === 'Rejected' && rejectionReason">
+              <div class="alert-icon">
+                <i class="fas fa-circle-xmark"></i>
               </div>
-            }
+              <div class="alert-content">
+                <p><strong>Your profile was rejected</strong></p>
+                <p>Reason: {{ rejectionReason }}</p>
+                <a routerLink="/psw/complete-profile" class="btn btn-danger btn-sm">Resubmit Documents →</a>
+              </div>
+            </div>
 
             @if (isProfileComplete && (verificationStatus === 'pending' || verificationStatus === 'Pending')) {
               <div class="profile-alert alert-warning">
@@ -105,62 +100,57 @@
             </div>
           </div>
         </div>
-
-
       </div>
 
       <div class="edit-profile-card mt-4">
-  <div class="card-header">
-    <h3><i class="fas fa-file-shield"></i> Verification Documents</h3>
-  </div>
-  <div class="docs-list p-3">
-
-
-    @if (docsLoading) {
-      <div class="docs-grid">
-        @for (item of [1,2,3,4,5,6]; track item) {
-          <div class="doc-card doc-card--skeleton">
-            <div class="skeleton-icon"></div>
-            <div class="skeleton-text"></div>
-          </div>
-        }
-      </div>
-    } @else if (!hasAnyDoc) {
-      <p class="text-muted text-center py-3">
-        <i class="fas fa-folder-open me-2"></i>No documents uploaded yet.
-      </p>
-    } @else {
-      <div class="docs-grid">
-        @for (doc of documentFiles; track doc.name) {
-          @if (doc.rawFile) {
-            <div class="doc-card">
-              <div class="doc-icon">
-                <i class="fas {{ doc.icon }}"></i>
-              </div>
-              <p class="doc-name">{{ doc.name }}</p>
-              @if (doc.loading) {
-                <span class="doc-status loading">
-                  <i class="fas fa-spinner fa-spin"></i> Loading...
-                </span>
-              } @else if (doc.error) {
-                <span class="doc-status error">
-                  <i class="fas fa-exclamation-circle"></i> Failed
-                </span>
-              } @else if (doc.url) {
-                <a [href]="doc.url" target="_blank" rel="noopener" class="btn-view">
-                  <i class="fas fa-eye"></i> View
-                </a>
-              } @else {
-                <span class="doc-status error">No URL</span>
+        <div class="card-header">
+          <h3><i class="fas fa-file-shield"></i> Verification Documents</h3>
+        </div>
+        <div class="docs-list p-3">
+          @if (docsLoading) {
+            <div class="docs-grid">
+              @for (item of [1,2,3,4,5,6]; track item) {
+                <div class="doc-card doc-card--skeleton">
+                  <div class="skeleton-icon"></div>
+                  <div class="skeleton-text"></div>
+                </div>
+              }
+            </div>
+          } @else if (!hasAnyDoc) {
+            <p class="text-muted text-center py-3">
+              <i class="fas fa-folder-open me-2"></i>No documents uploaded yet.
+            </p>
+          } @else {
+            <div class="docs-grid">
+              @for (doc of documentFiles; track doc.name) {
+                @if (doc.rawFile) {
+                  <div class="doc-card">
+                    <div class="doc-icon">
+                      <i class="fas {{ doc.icon }}"></i>
+                    </div>
+                    <p class="doc-name">{{ doc.name }}</p>
+                    @if (doc.loading) {
+                      <span class="doc-status loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                      </span>
+                    } @else if (doc.error) {
+                      <span class="doc-status error">
+                        <i class="fas fa-exclamation-circle"></i> Failed
+                      </span>
+                    } @else if (doc.url) {
+                      <a [href]="doc.url" target="_blank" rel="noopener" class="btn-view">
+                        <i class="fas fa-eye"></i> View
+                      </a>
+                    } @else {
+                      <span class="doc-status error">No URL</span>
+                    }
+                  </div>
+                }
               }
             </div>
           }
-        }
+        </div>
       </div>
-    }
-
-  </div>
-</div>
 
       <!-- Edit Form -->
       <div class="edit-profile-card">
@@ -226,4 +216,3 @@
 </div>
 
 <app-footer></app-footer>
-

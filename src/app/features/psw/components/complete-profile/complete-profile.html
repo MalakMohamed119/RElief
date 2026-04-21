@@ -1,10 +1,25 @@
 <app-toast></app-toast>
 <div class="complete-profile-container">
   <div class="card">
-    <h2>Complete your PSW profile</h2>
-    <p class="muted">Upload your documents to verify your profile.</p>
+   @if (verificationStatus && verificationStatus.toLowerCase() === 'rejected') {
+  <div class="profile-alert alert-danger mb-4">
+    <i class="fas fa-circle-xmark"></i>
+    <strong>Your profile was rejected</strong>
+    <p>Reason: {{ rejectionReason || 'no' }}</p>
+    
+  </div>
+} @else if (!profileComplete) {
+  <div class="profile-alert alert-warning mb-4">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Profile Incomplete</strong>
+    <p>Complete your PSW profile and upload required documents to apply for offers.</p>
+    <button type="button" class="btn btn-primary btn-sm" (click)="scrollToForm()">
+      Complete Profile
+    </button>
+  </div>
+}
+    <form #formContent [formGroup]="form" (ngSubmit)="submit()">
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="checkbox-row">
         <input type="checkbox" id="workStatus" formControlName="workStatus" />
         <label for="workStatus">Currently available for work</label>
