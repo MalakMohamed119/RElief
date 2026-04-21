@@ -1,10 +1,27 @@
-# PSW Profile Status Implementation TODO
+# PSW Offers Filtering & Badge Fix - TODO
 
-## Plan Steps:
-1. [x] Read auth.service.ts, api.models.ts, psw-profile.* - confirmed ProfileDto fields, logic.
-2. [x] Update complete-profile.ts: Added status loading/expose.
-3. [x] Update complete-profile.html: Added matching conditional banner with buttons.
-4. [x] Verified changes applied without breaking form.
+## Plan Implementation Steps:
 
-Task complete: PSW complete-profile now shows conditional status (incomplete or rejected with reason), only one, as requested.
+### 1. ✅ Create TODO.md (completed)
+
+### 2. ✅ Edit offers.ts
+- ✅ Add console.log in loadOffersWithApplications()
+- ✅ Fix filterAvailableOffers() to preserve applicationStatus
+
+### 3. ✅ Edit offers.html  
+- ✅ Fix badge condition in offer card to use isAlreadyApplied(offer)
+
+### 4. ✅ Additional Fix Applied
+- Updated filter to HIDE "Pending" and "Canceled" offers completely (as requested)
+- Only QualifiedByAdmin/Accepted will show with badges, others hidden
+
+### 5. 🔄 Final Test
+- Refresh page and verify no Pending/Canceled offers visible
+- Only already-applied (QualifiedByAdmin/Accepted) show with badges
+
+
+### 5. ✅ Complete task
+
+**Status: All code changes applied successfully! Ready for testing.**
+
 

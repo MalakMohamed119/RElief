@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule, DatePipe, AsyncPipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { PswNav } from '../../../../shared/components/psw-nav/psw-nav';
@@ -81,34 +81,39 @@ export class PswOffers implements OnInit {
       applications: this.pswApplicationsService.getPswApplications()
     }).subscribe({
       next: ({ offers: rawOffers, applications }) => {
-        console.log('📥 Loaded offers:', rawOffers.length, 'applications:', applications.length);
-        
         // Build status map: offerId -> status
         const statusMap = new Map<string, string>();
-        applications.forEach(app => {
+        applications.forEach((app: any) => {
           if (app.offerId) {
             statusMap.set(app.offerId, app.status);
           }
         });
 
-        // Filter out rejected offers, add status to others
-        this.offers = rawOffers.map(offer => {
-          const status = statusMap.get(offer.id);
-          (offer as any).applicationStatus = status || null;
-          return offer;
-        }).filter(offer => {
-          const status = offer.applicationStatus;
-          return !['RejectedByAdmin', 'RejectedByCareHome'].includes(status || '');
+        console.log('=== DEBUG: Full statusMap ===', Object.fromEntries(statusMap));
+        console.log('=== DEBUG: Each offer applicationStatus ===');
+        
+        // فلتر: شيل بس المرفوض، خلي الباقي كله
+        this.offers = rawOffers.map((offer: any) => {
+          const status = statusMap.get(offer.id) ?? null;
+          console.log(`Offer ${offer.id}: "${status}"`);
+          return { ...offer, applicationStatus: status };
+        }).filter((offer: any) => {
+          const s = offer.applicationStatus;
+          return s !== 'RejectedByAdmin' && 
+                 s !== 'RejectedByCareHome' && 
+                 s !== 'Pending' &&
+                 s !== 'Canceled';
         });
 
-        console.log('✅ Filtered offers:', this.offers.length);
-        this.myApplications = applications;
         
-        // Filter available offers with shifts
+        console.log('=== DEBUG: Final filtered offers with status ===', this.offers);
+
+
+        this.myApplications = applications;
         this.filterAvailableOffers();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading offers/applications:', err);
         this.error = 'Failed to load offers. Please try again.';
         this.isLoading = false;
@@ -128,28 +133,31 @@ export class PswOffers implements OnInit {
     if (this.offers.length === 0) {
       this.availableOffers = [];
       this.loadingAvailability = false;
+      this.cdr.detectChanges();
       return;
     }
 
     this.loadingAvailability = true;
-    const detailRequests = this.offers.map(offer => 
+    const detailRequests = this.offers.map((offer: any) =>
       this.offersService.getOfferById(offer.id).pipe(
-        map((details: any) => ({ offer, hasShifts: (details.shifts || []).length > 0 }))
+        map((details: any) => ({
+          offer,
+          hasShifts: (details.shifts || []).some((s: any) => s.isAvailable !== false)
+        }))
       )
     );
 
     forkJoin(detailRequests).subscribe({
-      next: (results) => {
+      next: (results: any[]) => {
         this.availableOffers = results
-          .filter((r: any) => r.hasShifts)
-          .map((r: any) => r.offer as BrowseOffer);
-        console.log(`Filtered to ${this.availableOffers.length} available offers out of ${this.offers.length}`);
+          .filter(r => r.hasShifts)
+          .map(r => ({ ...r.offer, applicationStatus: r.offer.applicationStatus } as BrowseOffer));
+
         this.loadingAvailability = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error filtering offers:', err);
-        this.availableOffers = [];
+      error: () => {
+        this.availableOffers = [...this.offers];
         this.loadingAvailability = false;
         this.cdr.detectChanges();
       }
@@ -166,27 +174,27 @@ export class PswOffers implements OnInit {
 
   openDetails(offer: BrowseOffer): void {
     if (!offer?.id) return;
-    
-    this.authService.loadUserProfile().subscribe();
-    
+
     this.selectedOffer = null;
     this.selectedShiftIds = [];
     this.isLoadingDetails = true;
 
     this.offersService.getOfferById(offer.id).subscribe({
-      next: (details) => {
-        this.selectedOffer = details as OfferDetails;
-        // Preserve applicationStatus from browse offer
-        if (offer.applicationStatus) {
-          (this.selectedOffer as any).applicationStatus = offer.applicationStatus;
-        }
+      next: (details: any) => {
+        this.selectedOffer = {
+          ...details,
+          applicationStatus: offer.applicationStatus ?? null
+        } as OfferDetails;
+
         this.selectedShiftIds = (this.selectedOffer.shifts || [])
+          .filter((s: any) => s.isAvailable !== false)
           .map((s: any) => s.shiftId ?? s.ShiftId ?? s.id ?? s.Id)
-          .filter((id: string | null | undefined) => !!id);
+          .filter((id: any) => !!id);
+
         this.isLoadingDetails = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Failed to load offer details', err);
         this.notifications.show('Failed to load offer details', 'error');
         this.isLoadingDetails = false;
@@ -213,9 +221,9 @@ export class PswOffers implements OnInit {
     return this.selectedShiftIds.includes(shiftId);
   }
 
-isAlreadyApplied(offer: BrowseOffer | OfferDetails): boolean {
+  isAlreadyApplied(offer: BrowseOffer | OfferDetails): boolean {
     const status = (offer as any).applicationStatus;
-    return !!(status && ['QualifiedByAdmin', 'Accepted', 'Pending'].includes(status));
+    return !!(status && ['QualifiedByAdmin', 'Accepted'].includes(status));
   }
 
   apply(offer: BrowseOffer | OfferDetails): void {
@@ -226,82 +234,71 @@ isAlreadyApplied(offer: BrowseOffer | OfferDetails): boolean {
 
     if (!offer?.id) return;
 
+    // لو الـ modal مش مفتوح على نفس الـ offer أو مفيش shifts محددة
+    if (!this.selectedOffer || this.selectedOffer.id !== offer.id || this.selectedShiftIds.length === 0) {
+      this.openDetails(offer as BrowseOffer);
+      return;
+    }
+
     this.authService.loadUserProfile().pipe(take(1)).subscribe((profile: any) => {
       const hasFiles = !!(profile?.pswCertificateFile && profile?.cvFile);
       const status = profile?.verificationStatus?.toLowerCase();
-      
-      if (profile?.isProfileCompleted === true) {
-        this.authService.setProfileComplete();
-      }
-      
+
       if (!hasFiles) {
         this.notifications.show('Please complete your profile to apply.', 'error');
         return;
       }
-      
+
       if (status === 'none' || status === 'pending') {
         this.notifications.show('Your profile is under review. You can apply once approved.', 'error');
         return;
       }
-      
+
       if (status === 'rejected') {
         this.notifications.show('Your profile was rejected. Please resubmit your documents.', 'error');
         return;
       }
-      
-      const role = this.authService.getUserRole();
-      const isPsw = role?.toLowerCase() === 'psw' || role?.toLowerCase() === 'caregiver';
-      
-      if (isPsw && !this.canApply()) {
-        this.notifications.show('Profile verification required before applying.', 'error');
-        return;
-      }
 
-      if ((offer as any).selectedOffer !== offer || this.selectedShiftIds.length === 0) {
-        this.notifications.show('Please view details and select shifts first.', 'info');
-        this.openDetails(offer as BrowseOffer);
+      if (status !== 'approved') {
+        this.notifications.show('Profile verification required before applying.', 'error');
         return;
       }
 
       this.applyingOfferId = offer.id;
 
-      this.profileService.getMyProfile().pipe(take(1)).subscribe((freshProfile) => {
-        const isComplete = !!(freshProfile?.pswCertificateFile && 
-                              freshProfile?.cvFile && 
-                              freshProfile?.proofIdentityFile &&
-                              freshProfile?.immunizationRecordFile &&
-                              freshProfile?.criminalRecordFile &&
-                              freshProfile?.verificationStatus?.toLowerCase() === 'approved');
-        if (!isComplete) {
-          this.notifications.show('Profile still incomplete or not approved yet.', 'error');
+      const payload: ApplyToOfferDto = {
+        offerId: offer.id,
+        shiftIds: this.selectedShiftIds,
+      };
+
+      this.offersService.applyToOffer(payload).subscribe({
+        next: () => {
+          // تحديث محلي فوري بدون reload
+          const updateStatus = (list: BrowseOffer[]) => {
+            const idx = list.findIndex(o => o.id === offer.id);
+            if (idx > -1) list[idx] = { ...list[idx], applicationStatus: 'QualifiedByAdmin' };
+          };
+          updateStatus(this.offers);
+          updateStatus(this.availableOffers);
+
           this.applyingOfferId = null;
-          return;
+          this.closeDetails();
+          this.cdr.detectChanges();
+
+          setTimeout(() => {
+            this.notifications.show('Application sent successfully!', 'success');
+            this.cdr.detectChanges();
+          }, 50);
+        },
+        error: (err: any) => {
+          console.error('Apply error', err);
+          let msg = err?.error?.message || err?.message || 'Failed to send request.';
+          if (err?.status === 403) msg = 'Not authorized to apply.';
+          else if (err?.status === 409) msg = err.error?.message || 'Already applied to these shifts.';
+          this.notifications.show(msg, 'error');
+          this.applyingOfferId = null;
+          this.cdr.detectChanges();
         }
-
-        const payload: ApplyToOfferDto = {
-          offerId: offer.id,
-          shiftIds: this.selectedShiftIds,
-        };
-
-        this.offersService.applyToOffer(payload).subscribe({
-          next: () => {
-            this.notifications.show('Request sent to Care Home successfully!', 'success');
-            this.applyingOfferId = null;
-            this.closeDetails();
-            this.loadOffersWithApplications();
-          },
-          error: (err) => {
-            console.error('Apply error', err);
-            let msg = err?.error?.message || err?.message || 'Failed to send request.';
-            if (err?.status === 403) {
-              msg = 'Not authorized to apply.';
-            } else if (err?.status === 409) {
-              msg = err.error?.message || 'Already applied to these shifts.';
-            }
-            this.notifications.show(msg, 'error');
-            this.applyingOfferId = null;
-          },
-        });
       });
     });
   }

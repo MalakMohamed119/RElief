@@ -115,13 +115,23 @@ export class Notifications implements OnInit {
 
   getRejectedApplications(): Application[] {
     return this.applications.filter(app =>
-      app.shifts?.some(s => s.status === 'Rejected')
+      app.shifts?.some(s => s.status === 'RejectedByCareHome' || s.status === 'RejectedByAdmin')
     );
   }
+
 
   getPendingCount(): number {
     return this.getPendingApplications().length;
   }
+
+  getRejectedCount(): number {
+    return this.getRejectedApplications().length;
+  }
+
+  getAcceptedCount(): number {
+    return this.getAcceptedApplications().length;
+  }
+
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 

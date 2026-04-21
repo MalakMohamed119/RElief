@@ -79,24 +79,30 @@ export class AdminApplications implements OnInit {
   private get filteredAll(): ApplicationItem[] {
     let list = this.allApplications;
 
+    console.log('Status filter:', this.statusFilter);
     if (this.statusFilter) {
       const want = this.statusFilter.toLowerCase();
-      list = list.filter((a) => normStatus(a).toLowerCase() === want);
+      list = list.filter((a) => {
+        const status = normStatus(a);
+        console.log('App status:', status, 'want:', want, 'match:', status.toLowerCase() === want);
+        return status.toLowerCase() === want;
+      });
     }
+
+    console.log('Final filtered list length:', list.length);
 
     return clientFilterSearch(list, this.searchInput, (a) =>
       [
         a.pswName,
         a.pswPhone || '',
         a.pswEmail || '',
-        a.offerTitle,
-        a.careHomeName,
         a.jobRequestId,
       ]
         .filter(Boolean)
         .join(' ')
     );
   }
+
 
   load(): void {
     this.isLoading = true;
@@ -270,8 +276,11 @@ export class AdminApplications implements OnInit {
   }
 
   getPswName(app: ApplicationItem): string {
-    return app.pswName || 'N/A';
+    return app.pswName || (app as any).pswFullName || (app as any).psw?.pswFullName || (app as any).psw?.fullName || 'N/A';
   }
+
+
+
 
   getPswPhone(app: ApplicationItem): string {
     if (!app.profileLoaded && app.pswUserId) {

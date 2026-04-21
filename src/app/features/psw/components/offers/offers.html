@@ -65,10 +65,11 @@
           <h2>{{ offer.title || 'Untitled offer' }}</h2>
           <div class="status-badge-section">
             <div 
-*ngIf="offer.applicationStatus && ['QualifiedByAdmin', 'Accepted', 'Pending'].includes(offer.applicationStatus)"
+*ngIf="isAlreadyApplied(offer)"
               class="badge already-applied">
               Already Applied
             </div>
+
           </div>
           <p class="address" *ngIf="offer.address">
             <i class="fas fa-map-marker-alt"></i>
