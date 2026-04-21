@@ -64,7 +64,16 @@ export interface ProfileDto {
   verificationStatus: string;
   rejectionReason?: string | null;
   isProfileCompleted: boolean;
+  isVerified?: boolean;
   profilePhoto?: { url: string; id: string; fileName: string } | null;
+  proofIdentityType?: string | null;
+  proofIdentityFile?: any | null;
+  insuranceFile?: any | null;
+  pswCertificateFile?: any | null;
+  cvFile?: any | null;
+  immunizationRecordFile?: any | null;
+  criminalRecordFile?: any | null;
+  firstAidOrCPRFile?: any | null;
 }
 
 export interface UpdateProfileDto {
@@ -77,7 +86,12 @@ export interface UpdateProfileDto {
 export interface CreateJobOfferDto {
   title: string;
   description: string;
-  address: any;
+  position: string;
+  address: string;
+  address2: string;
+  city: string;
+  province: string;
+  postalCode: string;
   latitude: number;
   longitude: number;
   hourlyRate: number;
@@ -98,3 +112,4 @@ export interface ApplyToOfferDto {
   message?: string;
   shiftIds?: string[];
 }
+

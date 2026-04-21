@@ -344,7 +344,7 @@ $radius-xl: 24px;
     }
   }
 
-  .card-actions {
+.card-actions {
     display: flex;
     gap: 0.75rem;
     margin-top: auto;
@@ -355,6 +355,36 @@ $radius-xl: 24px;
       flex: 1;
       padding: 0.65rem 1rem;
       font-size: 0.85rem;
+    }
+  }
+
+  // My Applications Status Badges
+  .status-badge {
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    &.pending {
+      background: $warning-light;
+      color: $warning-color;
+    }
+
+    &.accepted {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    &.rejected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    &.unknown {
+      background: #f3f4f6;
+      color: #6b7280;
     }
   }
 }

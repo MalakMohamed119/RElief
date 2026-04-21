@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../../../core/services/admin.service';
+import { ProfileService } from '../../../../core/services/profile.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import {
   clientFilterSearch,
@@ -16,6 +17,10 @@ interface ApplicationItem {
   offerId: string;
   pswName: string;
   pswEmail?: string;
+  pswPhone?: string;
+  pswVerification?: string;
+  pswPhotoUrl?: string;
+  hourlyRate?: number;
   offerTitle: string;
   careHomeName: string;
   shiftDate?: string;
@@ -23,6 +28,7 @@ interface ApplicationItem {
   endTime?: string;
   status: string;
   appliedAt: string;
+  profileLoaded?: boolean;
 }
 
 function normStatus(app: ApplicationItem): string {
@@ -39,6 +45,7 @@ function normStatus(app: ApplicationItem): string {
 })
 export class AdminApplications implements OnInit {
   private admin = inject(AdminService);
+  private profileService = inject(ProfileService);
   private notifications = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -80,9 +87,10 @@ export class AdminApplications implements OnInit {
     return clientFilterSearch(list, this.searchInput, (a) =>
       [
         a.pswName,
+        a.pswPhone || '',
+        a.pswEmail || '',
         a.offerTitle,
         a.careHomeName,
-        a.pswEmail,
         a.jobRequestId,
       ]
         .filter(Boolean)
@@ -263,6 +271,38 @@ export class AdminApplications implements OnInit {
 
   getPswName(app: ApplicationItem): string {
     return app.pswName || 'N/A';
+  }
+
+  getPswPhone(app: ApplicationItem): string {
+    if (!app.profileLoaded && app.pswUserId) {
+      this.loadPswDetails(app);
+    }
+    return app.pswPhone || 'N/A';
+  }
+
+  getVerificationStatus(app: ApplicationItem): string {
+    if (!app.profileLoaded && app.pswUserId) {
+      this.loadPswDetails(app);
+    }
+    return app.pswVerification || 'N/A';
+  }
+
+  private loadPswDetails(app: ApplicationItem): void {
+    if (!app.pswUserId || app.profileLoaded) return;
+
+    this.profileService.getProfileById(app.pswUserId).subscribe({
+      next: (profile) => {
+        app.pswPhone = profile.phoneNumber;
+        app.pswVerification = profile.verificationStatus;
+        app.pswPhotoUrl = profile.profilePhoto?.url;
+        app.profileLoaded = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.warn('Failed to load PSW profile details:', err);
+        app.profileLoaded = true; // Prevent retries
+      }
+    });
   }
 
   getCareHomeName(app: ApplicationItem): string {

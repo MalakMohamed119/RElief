@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -70,7 +70,20 @@ export class AdminService {
   getAdminApplicationsPaged(status: string = 'Pending'): Observable<AdminPagedResult> {
     const params = new HttpParams().set('Status', status);
     return this.http.get<any>(`${this.apiUrl}/api/admin/applications`, { params }).pipe(
-      map(extractAdminPagedResult)
+      map((rawResponse) => {
+        console.log('🔍 Raw admin applications API response:', rawResponse);
+        
+        // Handle raw array case
+        if (Array.isArray(rawResponse)) {
+          return {
+            items: rawResponse as any[],
+            total: rawResponse.length
+          };
+        }
+        
+        // Existing logic for wrapped responses
+        return extractAdminPagedResult(rawResponse);
+      })
     );
   }
 
@@ -106,8 +119,9 @@ export class AdminService {
     return this.http.post<any>(`${this.apiUrl}/api/admin/verifications/${pswId}/approve`, {});
   }
 
-  rejectVerification(pswId: string, payload: { reason: string }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/api/admin/verifications/${pswId}/reject`, payload);
+  rejectVerification(pswId: string, reason: string): Observable<any> {
+    const url = `${this.apiUrl}/api/admin/verifications/${pswId}/reject`;
+    return this.http.post(url, { reason });
   }
 
   getUsers(): Observable<any> {

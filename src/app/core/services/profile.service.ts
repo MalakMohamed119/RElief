@@ -11,6 +11,11 @@ export class ProfileService {
   private readonly apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
 
+  /** GET /api/files/{fileId}/download-url */
+  getFileDownloadUrl(fileId: string): Observable<string> {
+    return this.http.get<string>(`${this.apiUrl}/api/files/${fileId}/download-url`);
+  }
+
   /** GET /api/profile – current logged-in user's profile */
   getMyProfile(): Observable<ProfileDto> {
     return this.http.get<ProfileDto>(`${this.apiUrl}/api/profile`);

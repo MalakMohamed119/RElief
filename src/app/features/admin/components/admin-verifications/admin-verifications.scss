@@ -322,9 +322,9 @@
 }
 
 .ver-profile-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
   color: white;
   display: flex;
@@ -332,6 +332,23 @@
   justify-content: center;
   font-weight: 700;
   flex-shrink: 0;
+  font-size: 1.5rem;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  overflow: hidden;
+  position: relative;
+
+  img.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .ver-profile-id {
@@ -431,26 +448,7 @@
   word-break: break-all;
 }
 
-.ver-profile-body .btn-view-doc {
-  flex-shrink: 0;
-  padding: 0.35rem 0.75rem;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
 
-  &:hover:not(:disabled) {
-    opacity: 0.95;
-  }
-
-  &:disabled {
-    opacity: 0.65;
-    cursor: wait;
-  }
-}
 
 .ver-profile-json {
   margin: 0;
@@ -468,6 +466,96 @@
   margin-top: 0;
   padding: 1rem 1.5rem 1.25rem;
   border-top: 1px solid #e2e8f0;
+}
+
+/* PSW Docs Grid Styles */
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.doc-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .doc-icon {
+    i {
+      font-size: 2rem;
+      color: #0b96b1;
+    }
+  }
+
+  .doc-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+  }
+}
+
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.4rem;
+  background: linear-gradient(135deg, #0b96b1 0%, #054779 100%);
+  color: white !important;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.35s ease;
+  box-shadow: 0 4px 18px rgba(11, 150, 177, 0.3);
+  width: 100%;
+  min-height: 44px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(11, 150, 177, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  i {
+    font-size: 0.9rem;
+  }
+}
+
+.docs-list {
+  padding: 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 // Modal

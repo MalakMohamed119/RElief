@@ -133,6 +133,44 @@
         }
       </div>
     }
+
+    <!-- Applicants Modal -->
+    <div *ngIf="selectedOfferId" class="modal-overlay applicants-modal" (click)="closeApplicantsModal()">
+      <div class="modal-content applicants-modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Applicants for <strong>{{ selectedOfferTitle }}</strong></h2>
+          <button class="close-btn" (click)="closeApplicantsModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div *ngIf="applicantsLoading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading applicants...</p>
+        </div>
+        <div *ngIf="!applicantsLoading && applicants.length === 0" class="empty-state">
+          <i class="fas fa-users-slash"></i>
+          <p>No applications yet</p>
+        </div>
+        <div class="applicants-list" *ngIf="!applicantsLoading && applicants.length > 0">
+          <div *ngFor="let applicant of applicants" class="applicant-card">
+            <div class="applicant-avatar">
+              <img *ngIf="getApplicantPhotoUrl(applicant)" 
+                   [src]="getApplicantPhotoUrl(applicant)!" 
+                   [alt]="applicant.fullName"
+                   class="photo" 
+                   (error)="onPhotoError($event)" />
+              <span *ngIf="!getApplicantPhotoUrl(applicant)">{{ applicant.fullName.charAt(0).toUpperCase() }}</span>
+            </div>
+            <div class="applicant-info">
+              <h4>{{ applicant.fullName }}</h4>
+              <div class="status-badge" [class]="getStatusClass(applicant.statusCode)">
+                {{ applicant.status }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 

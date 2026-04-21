@@ -6,6 +6,7 @@ import { PswNav } from '../../../../shared/components/psw-nav/psw-nav';
 import { Footer } from '../../../../shared/components/footer/footer';
 import { ToastComponent } from '../../../../shared/components/toast/toast';
 import { OffersService } from '../../../../core/services/offers.service';
+import { PswApplicationsService } from '../../../../core/services/psw-applications.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ProfileService } from '../../../../core/services/profile.service';
@@ -19,6 +20,7 @@ interface BrowseOffer {
   address: string;
   hourlyRate: number | null;
   shifts: any[];
+  applicationStatus?: string | null;
 }
 
 interface OfferDetails extends BrowseOffer {
@@ -38,12 +40,16 @@ export class PswOffers implements OnInit {
   private offersService = inject(OffersService);
   private notifications = inject(NotificationService);
   private profileService = inject(ProfileService);
+  private pswApplicationsService = inject(PswApplicationsService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private authService = inject(AuthService);
 
   offers: BrowseOffer[] = [];
+  availableOffers: BrowseOffer[] = [];
+  myApplications: any[] = [];
   isLoading = true;
+  loadingAvailability = false;
   error: string | null = null;
 
   pageIndex = 1;
@@ -55,46 +61,94 @@ export class PswOffers implements OnInit {
   isLoadingDetails = false;
   applyingOfferId: string | null = null;
 
-  availableOffers: BrowseOffer[] = [];
-  loadingAvailability = false;
-
   readonly userProfile$ = this.authService.userProfile$;
 
   ngOnInit(): void {
     this.authService.loadUserProfile().subscribe();
-    this.loadOffers();
+    this.loadOffersWithApplications();
   }
 
-  canApply(): boolean {
-    const profile = this.authService.getUserProfile();
-    const status = profile?.verificationStatus?.toString().toLowerCase();
-    const isApproved = status === 'approved' || status === 'verified' || status === '2' || status === 'active' || profile?.isVerified === true;
-    console.log('!!! Can Apply Check - Status is:', status, 'Result:', isApproved);
-    return !!isApproved;
-  }
-
-  loadOffers(): void {
+  loadOffersWithApplications(): void {
     this.isLoading = true;
     this.error = null;
-    this.offersService.browseOffers({
-      pageIndex: this.pageIndex,
-      pageSize: this.pageSize,
-      search: this.search || undefined,
+
+    forkJoin({
+      offers: this.offersService.browseOffers({
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
+        search: this.search || undefined,
+      }),
+      applications: this.pswApplicationsService.getPswApplications()
     }).subscribe({
-      next: (response: any) => {
-        console.log('PSW Browse Offers Response:', response);
-        const rawData = response?.data || response?.items || response;
-        this.offers = Array.isArray(rawData) ? rawData : [];
-        console.log('PSW offers loaded:', this.offers.length);
+      next: ({ offers: rawOffers, applications }) => {
+        console.log('📥 Loaded offers:', rawOffers.length, 'applications:', applications.length);
+        
+        // Build status map: offerId -> status
+        const statusMap = new Map<string, string>();
+        applications.forEach(app => {
+          if (app.offerId) {
+            statusMap.set(app.offerId, app.status);
+          }
+        });
+
+        // Filter out rejected offers, add status to others
+        this.offers = rawOffers.map(offer => {
+          const status = statusMap.get(offer.id);
+          (offer as any).applicationStatus = status || null;
+          return offer;
+        }).filter(offer => {
+          const status = offer.applicationStatus;
+          return !['RejectedByAdmin', 'RejectedByCareHome'].includes(status || '');
+        });
+
+        console.log('✅ Filtered offers:', this.offers.length);
+        this.myApplications = applications;
         
         // Filter available offers with shifts
         this.filterAvailableOffers();
-        
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading offers:', err);
+        console.error('Error loading offers/applications:', err);
+        this.error = 'Failed to load offers. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  canApply(): boolean {
+    const profile = this.authService.getUserProfile() ?? null;
+    const hasFiles = !!(profile?.pswCertificateFile && profile?.cvFile);
+    const status = profile?.verificationStatus?.toLowerCase();
+    return hasFiles && status === 'approved';
+  }
+
+  filterAvailableOffers(): void {
+    if (this.offers.length === 0) {
+      this.availableOffers = [];
+      this.loadingAvailability = false;
+      return;
+    }
+
+    this.loadingAvailability = true;
+    const detailRequests = this.offers.map(offer => 
+      this.offersService.getOfferById(offer.id).pipe(
+        map((details: any) => ({ offer, hasShifts: (details.shifts || []).length > 0 }))
+      )
+    );
+
+    forkJoin(detailRequests).subscribe({
+      next: (results) => {
+        this.availableOffers = results
+          .filter((r: any) => r.hasShifts)
+          .map((r: any) => r.offer as BrowseOffer);
+        console.log(`Filtered to ${this.availableOffers.length} available offers out of ${this.offers.length}`);
+        this.loadingAvailability = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error filtering offers:', err);
         this.availableOffers = [];
         this.loadingAvailability = false;
         this.cdr.detectChanges();
@@ -102,13 +156,12 @@ export class PswOffers implements OnInit {
     });
   }
 
-  // ... rest of methods same as before ...
   onSearchChange(value: string): void {
     this.search = value;
     this.pageIndex = 1;
     this.offers = [];
     this.availableOffers = [];
-    this.loadOffers();
+    this.loadOffersWithApplications();
   }
 
   openDetails(offer: BrowseOffer): void {
@@ -123,6 +176,10 @@ export class PswOffers implements OnInit {
     this.offersService.getOfferById(offer.id).subscribe({
       next: (details) => {
         this.selectedOffer = details as OfferDetails;
+        // Preserve applicationStatus from browse offer
+        if (offer.applicationStatus) {
+          (this.selectedOffer as any).applicationStatus = offer.applicationStatus;
+        }
         this.selectedShiftIds = (this.selectedOffer.shifts || [])
           .map((s: any) => s.shiftId ?? s.ShiftId ?? s.id ?? s.Id)
           .filter((id: string | null | undefined) => !!id);
@@ -156,87 +213,67 @@ export class PswOffers implements OnInit {
     return this.selectedShiftIds.includes(shiftId);
   }
 
-  filterAvailableOffers(): void {
-    if (this.offers.length === 0) {
-      this.availableOffers = [];
-      this.loadingAvailability = false;
+isAlreadyApplied(offer: BrowseOffer | OfferDetails): boolean {
+    const status = (offer as any).applicationStatus;
+    return !!(status && ['QualifiedByAdmin', 'Accepted', 'Pending'].includes(status));
+  }
+
+  apply(offer: BrowseOffer | OfferDetails): void {
+    if (this.isAlreadyApplied(offer)) {
+      this.notifications.show('You have already applied to this offer.', 'info');
       return;
     }
 
-    this.loadingAvailability = true;
-    const detailRequests = this.offers.map(offer => 
-      this.offersService.getOfferById(offer.id).pipe(
-        map((details: any) => ({ offer, hasShifts: (details.shifts || []).length > 0 }))
-      )
-    );
-
-    forkJoin(detailRequests).subscribe({
-      next: (results) => {
-        this.availableOffers = results
-          .filter((r: any) => r.hasShifts)
-          .map((r: any) => r.offer);
-        console.log(`Filtered to ${this.availableOffers.length} available offers out of ${this.offers.length}`);
-        this.loadingAvailability = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error filtering offers:', err);
-        this.availableOffers = [];
-        this.loadingAvailability = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  apply(offer: BrowseOffer): void {
     if (!offer?.id) return;
 
     this.authService.loadUserProfile().pipe(take(1)).subscribe((profile: any) => {
-      console.log('Apply check - Full Profile:', JSON.stringify(profile));
+      const hasFiles = !!(profile?.pswCertificateFile && profile?.cvFile);
+      const status = profile?.verificationStatus?.toLowerCase();
       
-      // Explicitly sync profile complete state per server response
       if (profile?.isProfileCompleted === true) {
         this.authService.setProfileComplete();
+      }
+      
+      if (!hasFiles) {
+        this.notifications.show('Please complete your profile to apply.', 'error');
+        return;
+      }
+      
+      if (status === 'none' || status === 'pending') {
+        this.notifications.show('Your profile is under review. You can apply once approved.', 'error');
+        return;
+      }
+      
+      if (status === 'rejected') {
+        this.notifications.show('Your profile was rejected. Please resubmit your documents.', 'error');
+        return;
       }
       
       const role = this.authService.getUserRole();
       const isPsw = role?.toLowerCase() === 'psw' || role?.toLowerCase() === 'caregiver';
       
-      const profileCompleted = profile?.isProfileCompleted || profile?.profileCompleted || false;
-      const verificationStatus = profile?.verificationStatus;
-      
-      // Diagnostic log before API call
-      console.log('Applying with Profile Status:', {
-        isProfileCompleted: profileCompleted,
-        verificationStatus: verificationStatus,
-        fullProfile: profile,
-        canApply: this.canApply()
-      });
-      
-      if (isPsw && (!profileCompleted || !this.canApply())) {
-        let msg: string;
-        if (!profileCompleted) {
-          msg = 'You cannot apply yet. Please complete your profile information first to be eligible.';
-        } else {
-          msg = 'Your profile is not verified yet. You will be able to apply once approved by Admin.';
-        }
-        this.notifications.show(msg, 'error');
+      if (isPsw && !this.canApply()) {
+        this.notifications.show('Profile verification required before applying.', 'error');
         return;
       }
 
-      if (this.selectedOffer !== offer || this.selectedShiftIds.length === 0) {
+      if ((offer as any).selectedOffer !== offer || this.selectedShiftIds.length === 0) {
         this.notifications.show('Please view details and select shifts first.', 'info');
-        this.openDetails(offer);
+        this.openDetails(offer as BrowseOffer);
         return;
       }
 
       this.applyingOfferId = offer.id;
 
-      // Force final profile refresh before apply
       this.profileService.getMyProfile().pipe(take(1)).subscribe((freshProfile) => {
-        console.log('Final pre-apply profile refresh:', freshProfile);
-        if (freshProfile.isProfileCompleted !== true) {
-          this.notifications.show('Profile still incomplete. Please update required fields.', 'error');
+        const isComplete = !!(freshProfile?.pswCertificateFile && 
+                              freshProfile?.cvFile && 
+                              freshProfile?.proofIdentityFile &&
+                              freshProfile?.immunizationRecordFile &&
+                              freshProfile?.criminalRecordFile &&
+                              freshProfile?.verificationStatus?.toLowerCase() === 'approved');
+        if (!isComplete) {
+          this.notifications.show('Profile still incomplete or not approved yet.', 'error');
           this.applyingOfferId = null;
           return;
         }
@@ -247,26 +284,43 @@ export class PswOffers implements OnInit {
         };
 
         this.offersService.applyToOffer(payload).subscribe({
-        next: () => {
-          this.notifications.show('Request sent to Care Home successfully!', 'success');
-          this.applyingOfferId = null;
-          this.closeDetails();
-          this.loadOffers();
-        },
-        error: (err) => {
-          console.error('Apply error', err);
-          let msg = err?.error?.message || err?.message || 'Failed to send request.';
-          if (err?.status === 403) {
-            msg = 'Not authorized to apply.';
-          } else if (err?.status === 409) {
-            msg = err.error?.message || 'Already applied to these shifts.';
-          }
-          this.notifications.show(msg, 'error');
-          this.applyingOfferId = null;
-        },
-      });
+          next: () => {
+            this.notifications.show('Request sent to Care Home successfully!', 'success');
+            this.applyingOfferId = null;
+            this.closeDetails();
+            this.loadOffersWithApplications();
+          },
+          error: (err) => {
+            console.error('Apply error', err);
+            let msg = err?.error?.message || err?.message || 'Failed to send request.';
+            if (err?.status === 403) {
+              msg = 'Not authorized to apply.';
+            } else if (err?.status === 409) {
+              msg = err.error?.message || 'Already applied to these shifts.';
+            }
+            this.notifications.show(msg, 'error');
+            this.applyingOfferId = null;
+          },
+        });
       });
     });
   }
-}
 
+  getStatusClass(statusCode: number | undefined): string {
+    if (!statusCode) return 'unknown';
+    const code = Number(statusCode);
+    if (code === 1) return 'pending';
+    if (code === 2) return 'accepted';
+    if (code === 3) return 'rejected';
+    return 'unknown';
+  }
+
+  getStatusText(statusCode: number | undefined): string {
+    if (!statusCode) return 'Unknown';
+    const code = Number(statusCode);
+    if (code === 1) return 'Pending';
+    if (code === 2) return 'Accepted';
+    if (code === 3) return 'Rejected';
+    return 'Unknown';
+  }
+}

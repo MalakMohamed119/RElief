@@ -27,30 +27,24 @@ export const profileCompleteGuard: CanActivateFn = () => {
   
   if (userRole === 'psw') {
     // Check both server profile and localStorage flag
-    const profileCompleteFromServer = authService.getUserProfile()?.isProfileCompleted;
+    const serverProfile = authService.getUserProfile();
     const profileCompleteFromStorage = authService.isProfileComplete();
     const verificationStatus = authService.getVerificationStatus();
     
     console.log('Profile guard FINAL check:');
-    console.log('- Server profile complete:', profileCompleteFromServer);
+    console.log('- Server profile complete:', serverProfile?.isProfileCompleted);
     console.log('- Storage profile complete:', profileCompleteFromStorage);
     console.log('- Verification status:', verificationStatus);
     
-    // Allow access if:
-    // 1. Server says profile is complete, OR
-    // 2. LocalStorage says profile is complete, OR  
-    // 3. Verification status is pending/approved (means profile was submitted)
-    // BUT NOT if verification status is 'None' (means new user who hasn't submitted profile)
-    const isProfileComplete = profileCompleteFromServer || 
-                            profileCompleteFromStorage || 
-                            (verificationStatus === 'pending' || verificationStatus === 'approved');
+    const isProfileComplete = serverProfile?.isProfileCompleted === true || verificationStatus === 'Approved';
+    const needsCompleteProfile = !isProfileComplete;
     
-    const needsCompleteProfile = verificationStatus === 'None' || !isProfileComplete;
-    
+    console.log('- Server profile complete:', serverProfile?.isProfileCompleted);
+    console.log('- Verification status:', verificationStatus);
     console.log('- Final decision (needs complete profile?):', needsCompleteProfile);
     
     if (needsCompleteProfile) {
-      console.log('REDIRECTING to complete-profile - profile not completed or verification status is None');
+      console.log('REDIRECTING to complete-profile - profile not completed');
       console.log('=== PROFILE GUARD END (REDIRECT) ===');
       return router.createUrlTree(['/psw/complete-profile']);
     }

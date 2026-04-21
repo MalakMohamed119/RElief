@@ -66,6 +66,14 @@
           <span class="info-label">📧 Email</span>
           <span class="info-value">{{ app.pswEmail }}</span>
         </div>
+        <div class="info-row">
+          <span class="info-label">💰 Hourly Rate</span>
+          <span class="info-value rate-value">{{ app.hourlyRate ? '$' + app.hourlyRate + '/hr' : 'N/A' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📞 Phone</span>
+          <span class="info-value">{{ getPswPhone(app) }}</span>
+        </div>
 
         <div class="card-actions-grid" *ngIf="displayStatus(app) === 'Pending'">
           <button class="btn-approve-full" (click)="approve(app)" [disabled]="isProcessing(app)">

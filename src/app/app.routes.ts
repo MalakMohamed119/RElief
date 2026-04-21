@@ -53,10 +53,7 @@ export const routes: Routes = [
         path: 'offers',
         loadComponent: () => import('./features/psw/components/offers/offers').then(m => m.PswOffers)
       },
-      {
-        path: 'notifications',
-        loadComponent: () => import('./features/psw/components/psw-notifications/psw-notifications').then(m => m.PswNotifications)
-      },
+
       {
         path: 'profile',
         loadComponent: () => import('./features/psw/components/psw-profile/psw-profile').then(m => m.PswProfile)

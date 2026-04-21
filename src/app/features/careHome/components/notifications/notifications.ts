@@ -7,26 +7,28 @@ import { Footer } from '../../../../shared/components/footer/footer';
 import { ApplicationsService } from '../../../../core/services/applications.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ProfileService } from '../../../../core/services/profile.service';
-import { ProfileDto } from '../../../../core/models/api.models';
-import { tap } from 'rxjs/operators';
 
-interface Application {
-  id: string;
+interface ShiftItem {
   jobRequestItemId: string;
-  pswUserId?: string | null;
-  offerId: string;
-  shiftId?: string | null;
-  offerTitle: string;
-  pswName: string;
-  pswPhone: string;
-  serviceType: string;
-  address: string;
-  shiftDate: string;
+  shiftId: string;
+  date: string;
   startTime: string;
   endTime: string;
-  hourlyRate: number | null;
-  statusCode: number;
   status: string;
+}
+
+interface Application {
+  jobRequestId: string;
+  appliedAt: string;
+  psw: {
+    pswId: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    age: number;
+    verificationStatus: string;
+  };
+  shifts: ShiftItem[];
 }
 
 @Component({
@@ -44,10 +46,10 @@ export class Notifications implements OnInit {
   rejectingId: string | null = null;
   currentOfferId: string | null = null;
   activeTab: 'pending' | 'accepted' | 'rejected' = 'pending';
-  
+
   showRejectModal = false;
   rejectReason = '';
-  selectedAppId: string | null = null;
+  selectedApp: Application | null = null;
 
   selectedPsw: any = null;
   showProfileModal = false;
@@ -68,78 +70,109 @@ export class Notifications implements OnInit {
     });
   }
 
+  private isValidUUID(uuid: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+  }
+
   loadApplications(): void {
     this.loading = true;
     this.error = null;
 
-    const appsObservable = this.currentOfferId
-      ? this.applicationsService.getApplicationsByOfferId(this.currentOfferId)
+    const fetch$ = (this.currentOfferId && this.isValidUUID(this.currentOfferId))
+      ? this.applicationsService.getApplicationsForOffer(this.currentOfferId)
       : this.applicationsService.getAllApplications();
-    
-    appsObservable.pipe(tap((apps: any) => console.log('Final Apps for UI:', apps))).subscribe({
-      next: (apps) => {
-        this.applications = Array.isArray(apps) ? apps : [];
+
+    fetch$.subscribe({
+      next: (res: any) => {
+        const raw = Array.isArray(res) ? res : (res?.data ?? res?.items ?? []);
+        this.applications = raw as Application[];
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading applications:', err);
-        this.error = err?.error?.message || 'Failed to load applications.';
+        this.error = 'Failed to load applications.';
+        this.applications = [];
         this.loading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  getPendingCount(): number {
-    return this.applications.filter(app => app.statusCode === 1).length;
-  }
+  // ── Filtering ──────────────────────────────────────────────────────────────
 
   getPendingApplications(): Application[] {
-    return this.applications.filter(app => app.statusCode === 1);
+    return this.applications.filter(app =>
+      app.shifts?.some(s => s.status === 'QualifiedByAdmin')
+    );
   }
 
   getAcceptedApplications(): Application[] {
-    return this.applications.filter(app => app.statusCode === 2);
+    return this.applications.filter(app =>
+      app.shifts?.some(s => s.status === 'Accepted')
+    );
   }
 
   getRejectedApplications(): Application[] {
-    return this.applications.filter(app => app.statusCode === 3);
+    return this.applications.filter(app =>
+      app.shifts?.some(s => s.status === 'Rejected')
+    );
   }
 
+  getPendingCount(): number {
+    return this.getPendingApplications().length;
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  getFirstShift(app: Application): ShiftItem | null {
+    return app.shifts?.[0] ?? null;
+  }
+
+  getPswName(app: Application): string {
+    return app?.psw?.fullName || 'Unknown PSW';
+  }
+
+  formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      });
+    } catch { return dateStr; }
+  }
+
+  formatTime(timeStr: string | null | undefined): string {
+    return timeStr ? String(timeStr).substring(0, 5) : '--:--';
+  }
+
+  isProcessing(app: Application): boolean {
+    const shift = this.getFirstShift(app);
+    return this.acceptingId === shift?.jobRequestItemId ||
+           this.rejectingId === shift?.jobRequestItemId;
+  }
+
+  // ── Accept ─────────────────────────────────────────────────────────────────
+
   acceptRequest(app: Application): void {
-    console.log('=== ACCEPT REQUEST app ===', app);
+    const shift = this.getFirstShift(app);
+    if (!shift) { this.notificationService.show('No shift found.', 'error'); return; }
 
-    const jobRequestItemId = app.jobRequestItemId;
-    const shiftId = app.shiftId || '';
-
-    if (!this.applicationsService.isValidUUID(jobRequestItemId)) {
-      this.notificationService.show(`Cannot accept: Invalid jobRequestItemId "${jobRequestItemId}"`, 'error');
-      return;
-    }
-    
-    if (!this.applicationsService.isValidUUID(shiftId)) {
-      this.notificationService.show(`Cannot accept: Invalid shiftId "${shiftId}"`, 'error');
+    const { jobRequestItemId, shiftId } = shift;
+    if (!this.isValidUUID(jobRequestItemId) || !this.isValidUUID(shiftId)) {
+      this.notificationService.show('Invalid shift data.', 'error');
       return;
     }
 
     this.acceptingId = jobRequestItemId;
-    console.log('=== SENDING ACCEPT PAYLOAD ===', { shiftId, jobRequestItemId });
-    
     this.applicationsService.acceptShift({ shiftId, jobRequestItemId }).subscribe({
       next: () => {
-        this.notificationService.show('Application Accepted Successfully!', 'success');
-        const idx = this.applications.findIndex(a => a.jobRequestItemId === jobRequestItemId);
-        if (idx !== -1) {
-          this.applications[idx].statusCode = 2;
-          this.applications[idx].status = 'Accepted';
-        }
+        this.notificationService.show('Application accepted!', 'success');
+        shift.status = 'Accepted';
         this.acceptingId = null;
-        this.loadApplications();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Accept error:', err);
         this.notificationService.show(err?.error?.message || 'Accept failed', 'error');
         this.acceptingId = null;
         this.cdr.detectChanges();
@@ -147,8 +180,10 @@ export class Notifications implements OnInit {
     });
   }
 
+  // ── Reject ─────────────────────────────────────────────────────────────────
+
   openRejectModal(app: Application): void {
-    this.selectedAppId = app.jobRequestItemId;
+    this.selectedApp = app;
     this.rejectReason = '';
     this.showRejectModal = true;
   }
@@ -156,37 +191,31 @@ export class Notifications implements OnInit {
   closeRejectModal(): void {
     this.showRejectModal = false;
     this.rejectReason = '';
-    this.selectedAppId = null;
+    this.selectedApp = null;
   }
 
   confirmReject(): void {
-    if (!this.selectedAppId || !this.rejectReason.trim()) {
+    if (!this.selectedApp || !this.rejectReason.trim()) {
       this.notificationService.show('Enter rejection reason', 'error');
       return;
     }
 
-    if (!this.applicationsService.isValidUUID(this.selectedAppId)) {
-      this.notificationService.show(`Cannot reject: Invalid ID "${this.selectedAppId}"`, 'error');
+    const shift = this.getFirstShift(this.selectedApp);
+    if (!shift || !this.isValidUUID(shift.jobRequestItemId)) {
+      this.notificationService.show('Invalid shift data.', 'error');
       return;
     }
 
-    this.rejectingId = this.selectedAppId;
-    console.log('=== SENDING REJECT PAYLOAD ===', { jobRequestItemId: this.selectedAppId });
-    
-    this.applicationsService.rejectShift({ jobRequestItemId: this.selectedAppId }).subscribe({
+    this.rejectingId = shift.jobRequestItemId;
+    this.applicationsService.rejectShift({ jobRequestItemId: shift.jobRequestItemId }).subscribe({
       next: () => {
-        this.notificationService.show('✅ Application rejected', 'success');
-        const idx = this.applications.findIndex(a => a.jobRequestItemId === this.selectedAppId);
-        if (idx !== -1) {
-          this.applications[idx].statusCode = 3;
-          this.applications[idx].status = 'Rejected';
-        }
+        this.notificationService.show('Application rejected.', 'success');
+        shift.status = 'Rejected';
         this.rejectingId = null;
         this.closeRejectModal();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Reject error:', err);
         this.notificationService.show(err?.error?.message || 'Reject failed', 'error');
         this.rejectingId = null;
         this.cdr.detectChanges();
@@ -194,46 +223,17 @@ export class Notifications implements OnInit {
     });
   }
 
-  // REQUIRED HTML METHODS - EXACT MATCH
-  getPswName(app: any): string { 
-    return app?.pswName || 'Unknown PSW'; 
-  }
+  // ── Profile Modal ──────────────────────────────────────────────────────────
 
-  formatDate(dateStr: string): string { 
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
-      });
-    } catch {
-      return dateStr;
-    }
-  }
-
-  formatTime(timeStr: string): string { 
-    return timeStr ? String(timeStr).substring(0, 5) : '--:--'; 
-  }
-
-  isProcessing(app: any): boolean { 
-    return this.acceptingId === app?.jobRequestItemId || this.rejectingId === app?.jobRequestItemId; 
-  }
-
-  viewProfile(pswId: any): void {
-    if (!pswId) {
-      return;
-    }
+  viewProfile(pswId: string): void {
+    if (!pswId) return;
     this.profileService.getProfileById(pswId).subscribe({
       next: (data) => {
         this.selectedPsw = data;
         this.showProfileModal = true;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Profile fetch error:', err);
-        this.notificationService.show('Failed to load profile', 'error');
-      }
+      error: () => this.notificationService.show('Failed to load profile', 'error')
     });
   }
 

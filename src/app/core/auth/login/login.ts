@@ -138,35 +138,33 @@ export class LoginComponent implements OnInit {
     } else if (role === 'carehome' || role === 'individual') {
       this.router.navigate(['/care-home']);
     } else if (role === 'psw') {
-      const needsProfileCompletion = this.authService.getNeedsProfileCompletion();
-      const isProfileComplete = this.authService.isProfileComplete();
+      // Clear force redirect flag after login success
+      this.authService.clearNeedsProfileCompletion();
+      
+      // Backend profile check (aligned with guard)
+      const serverProfile = this.authService.getUserProfile();
       const verificationStatus = this.authService.getVerificationStatus();
+      const isProfileComplete = serverProfile?.isProfileCompleted === true || verificationStatus === 'Approved';
       
       console.log('PSW Login Flow Check:', {
-        needsProfileCompletion,
+        needsProfileCompletion: this.authService.getNeedsProfileCompletion(),
         isProfileComplete,
         verificationStatus,
+        serverProfileCompleted: serverProfile?.isProfileCompleted,
         token: !!this.authService.getToken()
       });
       
-      // FORCE redirect for FRESH REGISTRATIONS (flag takes priority)
-      if (needsProfileCompletion) {
-        console.log('🚨 FORCE REDIRECT: Fresh PSW registration detected!');
-        // DO NOT clear flag here - let complete-profile handle it
-        this.router.navigate(['/psw/complete-profile'], { 
-          state: { fromLogin: true, freshRegistration: true } 
-        });
-        console.log('=== LOGIN navigateByRole END (FORCE COMPLETE-PROFILE) ===');
-        return;
-      }
+      console.log('Login backend profile check:', {
+        isProfileComplete,
+        serverProfileCompleted: serverProfile?.isProfileCompleted,
+        verificationStatus
+      });
       
-      // Normal profile check (backend + flags)
-      const needsCompletion = !isProfileComplete || !verificationStatus || verificationStatus === 'None';
-      if (needsCompletion) {
-        console.log('PSW needs profile completion, redirecting');
+      if (!isProfileComplete) {
+        console.log('PSW needs profile completion (backend check), redirecting');
         this.router.navigate(['/psw/complete-profile']);
       } else {
-        console.log('PSW profile complete, going to dashboard');
+        console.log('PSW profile complete (backend check), going to dashboard');
         this.router.navigate(['/psw']);
       }
       console.log('=== LOGIN navigateByRole END ===');

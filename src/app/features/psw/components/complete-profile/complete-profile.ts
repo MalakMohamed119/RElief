@@ -225,6 +225,25 @@ export class PswCompleteProfile implements OnInit {
         this.isSubmitting = false;
         console.error('Complete profile error:', err);
         
+        if (err.status === 409) {
+          // Profile already submitted — treat as success
+          this.authService.setProfileComplete();
+        // Treat 409 as success: refresh profile data
+        this.authService.loadUserProfile().subscribe({
+          next: () => {
+            console.log('Profile refreshed after 409 success');
+          },
+          error: (err) => {
+            console.warn('Failed to refresh profile after 409, continuing navigation:', err);
+          }
+        });
+        this.notifications.show('Profile already submitted. Redirecting to profile...', 'success');
+        setTimeout(() => this.router.navigate(['/psw/profile']), 1500);
+        return;
+          setTimeout(() => this.router.navigate(['/psw']), 1500);
+          return;
+        }
+        
         if (err.status === 401) {
           this.notifications.show('Session expired. Please login again.', 'error');
           this.router.navigate(['/login']);

@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Navbar } from '../../../../shared/components/navbar/navbar';
 import { Footer } from '../../../../shared/components/footer/footer';
 import { OffersService } from '../../../../core/services/offers.service';
+import { ApplicationsService } from '../../../../core/services/applications.service';
 
 interface OfferItem {
   id: string;
@@ -24,6 +25,14 @@ interface ShiftItem {
   isBooked: boolean;
 }
 
+interface Applicant {
+  id: string;
+  fullName: string;
+  profilePhoto?: { url: string; id: string; fileName: string } | null;
+  statusCode: number;
+  status: string;
+}
+
 @Component({
   selector: 'app-offers',
   standalone: true,
@@ -36,7 +45,13 @@ export class Offers implements OnInit {
   loading = true;
   error: string | null = null;
 
+  // Applicants Modal
+  selectedOfferId: string | null = null;
+  applicants: Applicant[] = [];
+  applicantsLoading = false;
+
   private offersService = inject(OffersService);
+  private applicationsService = inject(ApplicationsService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -97,15 +112,62 @@ export class Offers implements OnInit {
   }
 
   editOffer(offer: OfferItem): void {
-    // Navigate to edit offer page or open edit modal
     console.log('Edit offer:', offer.id);
-    // Could implement: this.router.navigate(['/care-home/edit-offer', offer.id]);
   }
 
-  viewApplications(offer: OfferItem): void {
-    // Navigate to applications page for this offer
-    console.log('View applications for offer:', offer.id);
-    // Could implement: this.router.navigate(['/care-home/applications'], { queryParams: { offerId: offer.id } });
+  async viewApplications(offer: OfferItem): Promise<void> {
+    if (!offer.id) return;
+    
+    this.selectedOfferId = offer.id;
+    this.applicantsLoading = true;
+    this.applicants = [];
+    
+    this.applicationsService.getApplicationsForOffer(offer.id).subscribe({
+      next: (apps) => {
+        this.applicants = apps.map((app: any) => ({
+          id: app.pswUserId || app.id,
+          fullName: app.fullName || app.name || 'Unknown',
+          profilePhoto: app.profilePhoto,
+          statusCode: app.statusCode || 1,
+          status: app.status || 'Pending'
+        }));
+        this.applicantsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading applicants:', err);
+        this.error = 'Failed to load applicants.';
+        this.applicants = [];
+        this.applicantsLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeApplicantsModal(): void {
+    this.selectedOfferId = null;
+    this.applicants = [];
+    this.applicantsLoading = false;
+  }
+
+  getStatusClass(statusCode: number): string {
+    if (statusCode === 1) return 'pending';
+    if (statusCode === 2) return 'accepted';
+    if (statusCode === 3) return 'rejected';
+    return 'unknown';
+  }
+
+  getApplicantPhotoUrl(applicant: Applicant): string | null {
+    return applicant.profilePhoto?.url || null;
+  }
+
+  onPhotoError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  get selectedOfferTitle(): string {
+    return this.offers.find(o => o.id === this.selectedOfferId)?.title || '';
   }
 }
+
 

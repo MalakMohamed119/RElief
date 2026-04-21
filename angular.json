@@ -11,24 +11,29 @@
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
-          "options": {
-            "browser": "src/main.ts",
-            "index": "src/index.html",
-            "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "allowedCommonJsDependencies": [
-              "leaflet"
-            ]
-          },
+    "options": {
+      "browser": "src/main.ts",
+      "index": "src/index.html",
+      "tsConfig": "tsconfig.app.json",
+      "inlineStyleLanguage": "scss",
+      "assets": [
+        {
+          "glob": "**/*",
+          "input": "public"
+        }
+      ],
+      "styles": [
+        "src/styles.scss"
+      ],
+      "allowedCommonJsDependencies": [
+        "leaflet"
+      ],
+      "stylePreprocessorOptions": {
+        "includePaths": [
+          "src/styles"
+        ]
+      }
+    },
           "configurations": {
             "production": {
               "outputHashing": "all"

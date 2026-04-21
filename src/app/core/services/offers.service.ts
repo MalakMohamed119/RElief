@@ -80,7 +80,7 @@ export class OffersService {
     }));
   }
 
-  /** GET /api/offers/browse – public browse for PSW (paged) */
+  /** GET /api/Offers – public browse for PSW (paged) */
   browseOffers(options?: {
     pageIndex?: number;
     pageSize?: number;
@@ -101,7 +101,7 @@ export class OffersService {
       params = params.set('Search', options.search);
     }
     return this.http
-      .get<any>(`${this.apiUrl}/api/offers/browse`, { params })
+      .get<any>(`${this.apiUrl}/api/Offers`, { params })
       .pipe(map((res) => this.normalizeOffersResponse(res)));
   }
 

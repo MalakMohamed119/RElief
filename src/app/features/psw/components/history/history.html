@@ -2,7 +2,6 @@
 <app-toast></app-toast>
 
 <div class="history-page">
-  <!-- Header Banner -->
   <div class="page-header">
     <div class="header-content">
       <h1>My Applications</h1>
@@ -12,13 +11,12 @@
   </div>
 
   <div class="container">
-    <!-- Loading -->
+
     <div *ngIf="isLoading" class="state-card loading">
       <div class="spinner"></div>
       <p>Loading your applications...</p>
     </div>
 
-    <!-- Empty -->
     <div *ngIf="!isLoading && applications.length === 0" class="state-card empty">
       <i class="fas fa-clipboard-list"></i>
       <h3>No applications yet</h3>
@@ -28,39 +26,31 @@
       </a>
     </div>
 
-    <!-- Application Stats -->
+    <!-- Stats -->
     <div class="stats-row" *ngIf="!isLoading && applications.length > 0">
       <div class="stat-box">
-        <div class="stat-icon pending">
-          <i class="fas fa-clock"></i>
-        </div>
+        <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getPendingCount() }}</span>
           <span class="stat-label">Pending</span>
         </div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon accepted">
-          <i class="fas fa-check-circle"></i>
-        </div>
+        <div class="stat-icon accepted"><i class="fas fa-check-circle"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getAcceptedCount() }}</span>
           <span class="stat-label">Accepted</span>
         </div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon rejected">
-          <i class="fas fa-times-circle"></i>
-        </div>
+        <div class="stat-icon rejected"><i class="fas fa-times-circle"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getRejectedCount() }}</span>
           <span class="stat-label">Rejected</span>
         </div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon cancelled">
-          <i class="fas fa-ban"></i>
-        </div>
+        <div class="stat-icon cancelled"><i class="fas fa-ban"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getCancelledCount() }}</span>
           <span class="stat-label">Cancelled</span>
@@ -72,77 +62,59 @@
     <div class="applications-grid" *ngIf="!isLoading && applications.length > 0">
       <div *ngFor="let app of applications"
            class="application-card"
-           [class]="'status-' + app.statusLabel">
+           [ngClass]="'status-' + app.statusLabel">
+
         <div class="card-header">
           <div class="card-title">
             <h3>{{ app.app.offerTitle || 'Untitled offer' }}</h3>
-            <p class="care-home">
-              <i class="fas fa-building"></i>
-              {{ app.app.careHomeName || 'N/A' }}
-            </p>
           </div>
-          <span class="status-badge" [class]="'badge-' + app.statusLabel">
+          <span class="status-badge" [ngClass]="'badge-' + app.statusLabel">
             <i class="fas" [ngClass]="{
-              'fa-clock': app.statusLabel === 'pending',
-              'fa-check': app.statusLabel === 'accepted',
-              'fa-times': app.statusLabel === 'rejected',
-              'fa-ban': app.statusLabel === 'cancelled'
+              'fa-clock':  app.statusLabel === 'pending',
+              'fa-check':  app.statusLabel === 'accepted',
+              'fa-times':  app.statusLabel === 'rejected',
+              'fa-ban':    app.statusLabel === 'cancelled'
             }"></i>
             {{ app.statusDisplay }}
           </span>
         </div>
+
         <div class="card-body">
           <div class="info-grid">
-            <div class="info-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <div class="info-content">
-                <span class="info-label">Location</span>
-                <span class="info-value">{{ app.app.address || 'N/A' }}</span>
-              </div>
-            </div>
             <div class="info-item">
               <i class="fas fa-calendar-alt"></i>
               <div class="info-content">
                 <span class="info-label">Shift Date</span>
-                <span class="info-value">{{ app.app.shiftDate ? (app.app.shiftDate | date:'MMM d, y') : 'N/A' }}</span>
+                <span class="info-value">{{ app.app.date ? (app.app.date | date:'MMM d, y') : 'N/A' }}</span>
               </div>
             </div>
             <div class="info-item">
               <i class="fas fa-clock"></i>
               <div class="info-content">
                 <span class="info-label">Time</span>
-                <span class="info-value">
-                  {{ (app.app.startTime || app.app.endTime) ? ((app.app.startTime || '') + ' - ' + (app.app.endTime || '')) : 'N/A' }}
-                </span>
-              </div>
-            </div>
-            <div class="info-item" *ngIf="app.app.hourlyRate != null">
-              <i class="fas fa-pound-sign"></i>
-              <div class="info-content">
-                <span class="info-label">Hourly Rate</span>
-                <span class="info-value rate">£{{ app.app.hourlyRate | number:'1.2-2' }}/hr</span>
+                <span class="info-value">{{ app.app.startTime || '--' }} - {{ app.app.endTime || '--' }}</span>
               </div>
             </div>
           </div>
         </div>
+
         <div class="card-actions">
           <button class="btn btn-outline" (click)="viewRequest(app)">
             <i class="fas fa-eye"></i> View Details
           </button>
-          <button
-            class="btn btn-danger"
-            *ngIf="app.statusLabel === 'pending'"
-            (click)="cancel(app)">
+          <button class="btn btn-danger"
+                  *ngIf="app.statusLabel === 'pending'"
+                  (click)="cancel(app)">
             <i class="fas fa-times"></i> Cancel
           </button>
         </div>
+
       </div>
     </div>
 
     <div class="actions" *ngIf="!isLoading">
       <a routerLink="/psw" class="back-btn">
-        <i class="fas fa-arrow-left"></i>
-        Back to Offers
+        <i class="fas fa-arrow-left"></i> Back to Offers
       </a>
     </div>
   </div>
@@ -154,44 +126,28 @@
     <div class="request-details">
       <div class="request-header">
         <h2>{{ selectedApp.app.offerTitle }}</h2>
-        <span class="request-status" [class]="'badge-' + selectedApp.statusLabel">
+        <span class="request-status" [ngClass]="'badge-' + selectedApp.statusLabel">
           <i class="fas" [ngClass]="{
             'fa-clock': selectedApp.statusLabel === 'pending',
             'fa-check': selectedApp.statusLabel === 'accepted',
             'fa-times': selectedApp.statusLabel === 'rejected',
-            'fa-ban': selectedApp.statusLabel === 'cancelled'
+            'fa-ban':   selectedApp.statusLabel === 'cancelled'
           }"></i>
           {{ selectedApp.statusDisplay }}
         </span>
       </div>
-      
       <div class="detail-body">
-        <div class="detail-section">
-          <h3><i class="fas fa-building"></i> Care Home</h3>
-          <p>{{ selectedApp.app.careHomeName || 'N/A' }}</p>
-        </div>
-        
-        <div class="detail-section">
-          <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
-          <p>{{ selectedApp.app.address || 'N/A' }}</p>
-        </div>
-        
         <div class="detail-grid">
-          <div class="detail-item" *ngIf="selectedApp.app.hourlyRate != null">
-            <h4><i class="fas fa-pound-sign"></i> Hourly Rate</h4>
-            <p class="rate">£{{ selectedApp.app.hourlyRate | number:'1.2-2' }}/hour</p>
-          </div>
-          <div class="detail-item" *ngIf="selectedApp.app.shiftDate">
+          <div class="detail-item">
             <h4><i class="fas fa-calendar-alt"></i> Shift Date</h4>
-            <p>{{ selectedApp.app.shiftDate | date:'fullDate' }}</p>
+            <p>{{ selectedApp.app.date ? (selectedApp.app.date | date:'fullDate') : 'N/A' }}</p>
           </div>
-          <div class="detail-item" *ngIf="selectedApp.app.startTime || selectedApp.app.endTime">
+          <div class="detail-item">
             <h4><i class="fas fa-clock"></i> Time</h4>
             <p>{{ selectedApp.app.startTime }} - {{ selectedApp.app.endTime }}</p>
           </div>
         </div>
       </div>
-      
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="closeDetails()">
           <i class="fas fa-times"></i> Close
@@ -202,4 +158,3 @@
 </div>
 
 <app-footer></app-footer>
-

@@ -9,36 +9,37 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { CancelApplicationDto } from '../../../../core/models/api.models';
 
 interface PswApplication {
+  jobRequestId: string;
   jobRequestItemId: string;
+  shiftId: string;
   offerId: string;
   offerTitle: string;
-  careHomeName: string;
-  address: string;
-  hourlyRate: number;
-  shiftDate: string;
+  date: string;
   startTime: string;
   endTime: string;
-  statusCode: number;
+  status: string;
 }
 
 class PswApplicationPresenter {
   constructor(public app: PswApplication) {}
 
   get statusLabel(): string {
-    switch (this.app.statusCode) {
-      case 2: return 'rejected';
-      case 3: return 'accepted';
-      case 5: return 'cancelled';
-      default: return 'pending';
+    switch (this.app.status) {
+      case 'Accepted':            return 'accepted';
+      case 'RejectedByAdmin':
+      case 'RejectedByCareHome':  return 'rejected';
+      case 'Canceled':            return 'cancelled';
+      default:                    return 'pending';
     }
   }
 
   get statusDisplay(): string {
-    switch (this.app.statusCode) {
-      case 2: return 'Rejected';
-      case 3: return 'Accepted';
-      case 5: return 'Cancelled';
-      default: return 'Pending';
+    switch (this.app.status) {
+      case 'Accepted':            return 'Accepted';
+      case 'RejectedByAdmin':
+      case 'RejectedByCareHome':  return 'Rejected';
+      case 'Canceled':            return 'Cancelled';
+      default:                    return 'Pending';
     }
   }
 }
@@ -68,9 +69,9 @@ export class History implements OnInit {
   loadApplications(): void {
     this.isLoading = true;
     this.pswApplicationsService.getPswApplications().subscribe({
-      next: (apps: any[]) => {
-        const all = apps ?? [];
-        this.applications = all.map(app => new PswApplicationPresenter(app));
+      next: (res: any) => {
+        const raw: any[] = Array.isArray(res) ? res : (res?.data ?? res?.items ?? []);
+        this.applications = raw.map(a => new PswApplicationPresenter(a as PswApplication));
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -94,35 +95,21 @@ export class History implements OnInit {
       this.notifications.show('Cannot cancel: missing request id.', 'error');
       return;
     }
-    const payload: CancelApplicationDto = {
-      jobRequestItemId: app.app.jobRequestItemId,
-    };
+    const payload: CancelApplicationDto = { jobRequestItemId: app.app.jobRequestItemId };
     this.pswApplicationsService.cancelApplication(payload).subscribe({
       next: () => {
         this.notifications.show('Application cancelled successfully.', 'success');
-        app.app.statusCode = 5;
+        app.app.status = 'Canceled';
         this.cdr.detectChanges();
       },
       error: (err) => {
-        const msg = err?.error?.message || err?.message || 'Failed to cancel application.';
-        this.notifications.show(msg, 'error');
+        this.notifications.show(err?.error?.message || 'Failed to cancel.', 'error');
       }
     });
   }
 
-  getPendingCount(): number {
-    return this.applications.filter(a => a.statusLabel === 'pending').length;
-  }
-
-  getAcceptedCount(): number {
-    return this.applications.filter(a => a.statusLabel === 'accepted').length;
-  }
-
-  getRejectedCount(): number {
-    return this.applications.filter(a => a.statusLabel === 'rejected').length;
-  }
-
-  getCancelledCount(): number {
-    return this.applications.filter(a => a.statusLabel === 'cancelled').length;
-  }
+  getPendingCount(): number   { return this.applications.filter(a => a.statusLabel === 'pending').length; }
+  getAcceptedCount(): number  { return this.applications.filter(a => a.statusLabel === 'accepted').length; }
+  getRejectedCount(): number  { return this.applications.filter(a => a.statusLabel === 'rejected').length; }
+  getCancelledCount(): number { return this.applications.filter(a => a.statusLabel === 'cancelled').length; }
 }

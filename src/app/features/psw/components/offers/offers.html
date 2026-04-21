@@ -22,10 +22,10 @@
           [value]="search"
           (input)="onSearchChange($any($event.target).value)" />
       </div>
-      <a routerLink="/psw/history" class="btn btn-secondary">
-        <i class="fas fa-history"></i>
-        My Applications
-      </a>
+      <button class="btn btn-secondary" (click)="loadOffersWithApplications()">
+        <i class="fas fa-redo"></i>
+        Refresh
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -38,7 +38,7 @@
     <div *ngIf="!isLoading && error" class="state-card error">
       <i class="fas fa-exclamation-circle"></i>
       <p>{{ error }}</p>
-      <button class="btn btn-primary" (click)="loadOffers()">
+      <button class="btn btn-primary" (click)="loadOffersWithApplications()">
         <i class="fas fa-redo"></i> Retry
       </button>
     </div>
@@ -63,6 +63,13 @@
         *ngFor="let offer of availableOffers">
         <div class="card-header">
           <h2>{{ offer.title || 'Untitled offer' }}</h2>
+          <div class="status-badge-section">
+            <div 
+*ngIf="offer.applicationStatus && ['QualifiedByAdmin', 'Accepted', 'Pending'].includes(offer.applicationStatus)"
+              class="badge already-applied">
+              Already Applied
+            </div>
+          </div>
           <p class="address" *ngIf="offer.address">
             <i class="fas fa-map-marker-alt"></i>
             {{ offer.address }}
@@ -104,10 +111,10 @@
           <button 
             class="btn btn-primary"
             type="button"
-            [disabled]="applyingOfferId === offer.id"
+            [disabled]="applyingOfferId === offer.id || !canApply() || isAlreadyApplied(offer)"
             (click)="apply(offer)">
             <i class="fas" [ngClass]="applyingOfferId === offer.id ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-            {{ applyingOfferId === offer.id ? 'Applying...' : 'Apply Now' }}
+            {{ applyingOfferId === offer.id ? 'Applying...' : (isAlreadyApplied(offer) ? 'Already Applied' : 'Apply Now') }}
           </button>
         </div>
       </article>
@@ -119,6 +126,9 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <header class="modal-header">
         <h2>{{ selectedOffer.title || 'Offer details' }}</h2>
+        <div class="status-badge-section" *ngIf="isAlreadyApplied(selectedOffer)">
+          <div class="badge already-applied">Already Applied</div>
+        </div>
         <button type="button" class="close-btn" (click)="closeDetails()">
           <i class="fas fa-times"></i>
         </button>
@@ -195,10 +205,10 @@
         <button 
           class="btn btn-primary" 
           type="button"
-          [disabled]="applyingOfferId === selectedOffer.id || selectedShiftIds.length === 0"
+          [disabled]="applyingOfferId === selectedOffer.id || selectedShiftIds.length === 0 || !canApply() || isAlreadyApplied(selectedOffer)"
           (click)="apply(selectedOffer)">
           <i class="fas" [ngClass]="applyingOfferId === selectedOffer.id ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-          {{ applyingOfferId === selectedOffer.id ? 'Applying...' : 'Apply for ' + selectedShiftIds.length + ' shift(s)' }}
+          {{ applyingOfferId === selectedOffer.id ? 'Applying...' : (isAlreadyApplied(selectedOffer) ? 'Already Applied' : 'Apply for ' + selectedShiftIds.length + ' shift(s)') }}
         </button>
       </footer>
     </div>

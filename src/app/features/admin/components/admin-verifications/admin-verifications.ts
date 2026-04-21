@@ -18,6 +18,15 @@ import {
   type ProfileViewSection,
 } from '../../../../core/utils/admin-profile-view';
 
+interface DocumentFile {
+  name: string;
+  icon: string;
+  rawFile: any;
+  fileId: string | null;
+  url: string | null;
+  loading: boolean;
+}
+
 interface VerificationItem {
   pswUserId: string;
   fullName: string;
@@ -50,6 +59,15 @@ export class AdminVerifications implements OnInit {
   readonly formatProfileCell = formatProfileCell;
   readonly isProfileFileIdRow = isProfileFileIdRow;
 
+  readonly docConfig = [
+    { key: 'proofIdentityFileId', name: 'Proof of Identity', icon: 'fa-id-card' },
+    { key: 'pswCertificateFileId', name: 'PSW Certificate', icon: 'fa-certificate' },
+    { key: 'cvFileId', name: 'CV / Resume', icon: 'fa-file-pdf' },
+    { key: 'immunizationRecordFileId', name: 'Immunization Record', icon: 'fa-syringe' },
+    { key: 'criminalRecordFileId', name: 'Criminal Record Check', icon: 'fa-shield-alt' },
+    { key: 'firstAidOrCPRFileId', name: 'First Aid / CPR', icon: 'fa-heart' },
+  ];
+
   fileOpeningId: string | null = null;
 
   private allVerifications: VerificationItem[] = [];
@@ -57,12 +75,15 @@ export class AdminVerifications implements OnInit {
   verifications: VerificationItem[] = [];
   isLoading = true;
   error: string | null = null;
-  rejectReason = '';
+rejectReason = '';
   rejectPswId: string | null = null;
+  rejecting = false;
 
   profileUserId: string | null = null;
   profileLoading = false;
   profileDetail: Record<string, unknown> | null = null;
+  documentFiles: DocumentFile[] = [];
+  docsLoading = false;
 
   searchInput = '';
   pageIndex = 0;
@@ -70,6 +91,10 @@ export class AdminVerifications implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  isProfileComplete(v: VerificationItem): boolean {
+    return !!(v.profileCompletedAt && v.profileCompletedAt.trim());
   }
 
   get filteredCount(): number {
@@ -97,9 +122,12 @@ export class AdminVerifications implements OnInit {
     this.admin.getPendingVerificationsPaged().subscribe({
       next: ({ items, total }) => {
         const response = items as unknown as VerificationItem[];
-        this.allVerifications = Array.isArray(response) ? response : [];
+        // Filter to only complete profiles (backend reject requirement)
+        this.allVerifications = Array.isArray(response) 
+          ? response.filter(v => this.isProfileComplete(v)) 
+          : [];
         if (this.allVerifications.length === 0 && total > 0) {
-          /* API may return count only */
+          /* API may return count only - note: incomplete profiles filtered */
         }
         this.isLoading = false;
         this.applyLocalPage();
@@ -170,27 +198,64 @@ export class AdminVerifications implements OnInit {
     this.profileUserId = pswUserId;
     this.profileDetail = null;
     this.profileLoading = true;
+    this.loadProfileDocuments();
+  }
 
-    this.admin.getAdminUserProfile(pswUserId).subscribe({
-      next: (data) => {
-        const normalized = normalizeProfilePayload(data);
-        this.profileDetail =
-          normalized ??
-          (data != null && typeof data === 'object' && !Array.isArray(data)
-            ? (data as Record<string, unknown>)
-            : { value: data as unknown });
-        this.profileLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.profileLoading = false;
-        this.notifications.show(
-          (err as { error?: { message?: string } })?.error?.message || 'Failed to load profile.',
-          'error'
-        );
-        this.profileUserId = null;
-        this.cdr.detectChanges();
-      },
+  loadProfileDocuments(): void {
+    const verificationItem = this.allVerifications.find(v => v.pswUserId === this.profileUserId);
+    if (!verificationItem) {
+      this.profileLoading = false;
+      this.docsLoading = false;
+      this.notifications.show('Verification data not found.', 'error');
+      this.profileUserId = null;
+      return;
+    }
+
+    this.profileDetail = verificationItem as any;
+    this.documentFiles = this.docConfig.map(cfg => ({
+      name: cfg.name,
+      icon: cfg.icon,
+      rawFile: (verificationItem as any)[cfg.key] ?? null,
+      fileId: null,
+      url: null,
+      loading: false
+    })).filter(doc => doc.rawFile);
+
+    const pending = this.documentFiles.filter(d => d.rawFile);
+    let resolved = 0;
+
+    if (pending.length === 0) {
+      this.profileLoading = false;
+      this.docsLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    pending.forEach(doc => {
+      const fileId = doc.rawFile as string;
+      doc.loading = true;
+      doc.fileId = fileId;
+      this.files.getDownloadUrl(fileId).subscribe({
+        next: (url) => {
+          doc.url = typeof url === 'string' ? url : (url as any).url || null;
+          doc.loading = false;
+          resolved++;
+          if (resolved >= pending.length) {
+            this.profileLoading = false;
+            this.docsLoading = false;
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          doc.loading = false;
+          resolved++;
+          if (resolved >= pending.length) {
+            this.profileLoading = false;
+            this.docsLoading = false;
+          }
+          this.cdr.detectChanges();
+        }
+      });
     });
   }
 
@@ -200,11 +265,10 @@ export class AdminVerifications implements OnInit {
     this.fileOpeningId = null;
   }
 
-  openProfileDocument(fileId: unknown): void {
-    const id = typeof fileId === 'string' ? fileId.trim() : '';
-    if (!id) return;
-    this.fileOpeningId = id;
-    this.files.getDownloadUrl(id).subscribe({
+  openProfileDocument(fileId: string): void {
+    if (!fileId) return;
+    this.fileOpeningId = fileId;
+    this.files.getDownloadUrl(fileId).subscribe({
       next: (url) => {
         this.fileOpeningId = null;
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -219,7 +283,7 @@ export class AdminVerifications implements OnInit {
   }
 
   profileSections(): ProfileViewSection[] {
-    return buildProfileSections(this.profileDetail);
+    return []; // Docs only - no table view
   }
 
   get profileInitial(): string {
@@ -229,6 +293,15 @@ export class AdminVerifications implements OnInit {
     const email = p['email'] ?? p['Email'];
     const s = String(first || email || '?').trim();
     return s ? s.charAt(0).toUpperCase() : '?';
+  }
+
+  getProfilePhotoUrl(): string | null {
+    const photo = this.profileDetail?.['profilePhoto'] as any;
+    return photo?.url || null;
+  }
+
+  onPhotoError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
   approve(pswId: string): void {
@@ -261,7 +334,8 @@ export class AdminVerifications implements OnInit {
       return;
     }
 
-    this.admin.rejectVerification(this.rejectPswId, { reason: this.rejectReason.trim() }).subscribe({
+    this.rejecting = true;
+    this.admin.rejectVerification(this.rejectPswId!, this.rejectReason.trim()).subscribe({
       next: () => {
         this.notifications.show('Verification rejected.', 'success');
         this.allVerifications = this.allVerifications.filter((v) => v.pswUserId !== this.rejectPswId);
@@ -271,8 +345,16 @@ export class AdminVerifications implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.notifications.show(err?.error?.message || 'Failed to reject verification.', 'error');
+        console.error('Reject verification failed:', this.rejectPswId, err);
+        const msg = err?.error?.message || err?.message || 'Failed to reject verification.';
+        this.notifications.show(msg, 'error');
+        this.rejecting = false;
+        this.cdr.detectChanges();
       },
+      complete: () => {
+        this.rejecting = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -305,4 +387,25 @@ export class AdminVerifications implements OnInit {
     }
     return 'N/A';
   }
+
+  getDisplayNameFromId(pswId: string): string {
+    const v = this.allVerifications.find(item => item.pswUserId === pswId);
+    return v ? this.getDisplayName(v) : 'N/A';
+  }
+
+  getEmailFromId(pswId: string): string {
+    const v = this.allVerifications.find(item => item.pswUserId === pswId);
+    return v ? this.getEmail(v) : 'N/A';
+  }
+
+  getIdentityTypeFromId(pswId: string): string {
+    const v = this.allVerifications.find(item => item.pswUserId === pswId);
+    return v ? this.getIdentityType(v) : 'N/A';
+  }
+
+  getPhoneFromId(pswId: string): string {
+    const v = this.allVerifications.find(item => item.pswUserId === pswId);
+    return v ? (v as any).phoneNumber || 'N/A' : 'N/A';
+  }
 }
+

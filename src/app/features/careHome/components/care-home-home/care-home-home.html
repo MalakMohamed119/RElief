@@ -88,6 +88,63 @@
               <div class="error-message">Enter an address or pick a location on the map.</div>
             }
           </div>
+          
+          <!-- New Required Address Details and Position -->
+          <div class="form-group">
+            <label for="position">Job Position <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-user-nurse"></i>
+              <input type="text" id="position" formControlName="position" placeholder="e.g., Registered Nurse, PCA, Home Support Worker">
+            </div>
+            @if (requestForm.get('position')?.invalid && requestForm.get('position')?.touched) {
+              <div class="error-message">Job position is required.</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="address2">Address Line 2 <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" id="address2" formControlName="address2" placeholder="Apt/Unit/Street Line 2">
+            </div>
+            @if (requestForm.get('address2')?.invalid && requestForm.get('address2')?.touched) {
+              <div class="error-message">Address line 2 is required.</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="city">City <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-city"></i>
+              <input type="text" id="city" formControlName="city" placeholder="Enter city">
+            </div>
+            @if (requestForm.get('city')?.invalid && requestForm.get('city')?.touched) {
+              <div class="error-message">City is required.</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="province">Province/State <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-map"></i>
+              <input type="text" id="province" formControlName="province" placeholder="Enter province/state">
+            </div>
+            @if (requestForm.get('province')?.invalid && requestForm.get('province')?.touched) {
+              <div class="error-message">Province/state is required.</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="postalCode">Postal Code <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope"></i>
+              <input type="text" id="postalCode" formControlName="postalCode" placeholder="e.g., M5V 2T6">
+            </div>
+            @if (requestForm.get('postalCode')?.invalid && requestForm.get('postalCode')?.touched) {
+              <div class="error-message">Postal code is required.</div>
+            }
+          </div>
+          
           <div class="form-group">
             <label for="hourlyRate">Hourly Rate</label>
             <div class="input-wrapper">
