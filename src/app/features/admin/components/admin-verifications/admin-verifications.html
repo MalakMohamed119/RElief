@@ -137,21 +137,16 @@
   <!-- Profile modal (before verify) -->
   <div *ngIf="profileUserId" class="modal" (click)="closeProfile()">
     <div class="modal-content ver-profile-modal" (click)="$event.stopPropagation()">
-      <div class="ver-profile-head">
-        <div class="ver-profile-avatar" *ngIf="profileLoading">…</div>
-        <div class="ver-profile-avatar" *ngIf="!profileLoading && profileDetail">
-          <img *ngIf="getProfilePhotoUrl()" 
-               [src]="getProfilePhotoUrl()" 
-               [alt]="'Photo of ' + profileInitial"
-               class="profile-photo"
-               (error)="onPhotoError($event)" />
-          <span *ngIf="!getProfilePhotoUrl()">{{ profileInitial }}</span>
-        </div>
-        <div class="ver-profile-titles">
-          <h2>{{ getDisplayNameFromId(profileUserId!) }}</h2>
-        </div>
-        <button type="button" class="ver-profile-close" (click)="closeProfile()" aria-label="Close">×</button>
-      </div>
+<div class="ver-profile-head">
+  <div class="ver-profile-avatar">
+    <img *ngIf="getProfilePhotoUrl()" [src]="getProfilePhotoUrl()" [alt]="'Photo of ' + profileInitial" class="profile-photo" (error)="onPhotoError($event)" />
+    <span *ngIf="!getProfilePhotoUrl()">{{ profileInitial }}</span>
+  </div>
+  <div class="ver-profile-titles">
+    <h2>{{ getDisplayNameFromId(profileUserId!) }}</h2>
+  </div>
+  <button type="button" class="ver-profile-close" (click)="closeProfile()" aria-label="Close">×</button>
+</div>
       <div *ngIf="profileLoading" class="ver-profile-loading">Loading profile…</div>
       <div *ngIf="profileLoading" class="ver-profile-loading">Loading documents...</div>
       <div *ngIf="profileLoading" class="ver-profile-loading">Loading documents...</div>

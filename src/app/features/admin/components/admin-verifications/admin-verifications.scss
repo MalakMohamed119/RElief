@@ -308,7 +308,8 @@
 
 .ver-profile-head {
   display: flex;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #e2e8f0;
@@ -318,6 +319,8 @@
   h2 {
     margin: 0 0 0.25rem;
     font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
   }
 }
 

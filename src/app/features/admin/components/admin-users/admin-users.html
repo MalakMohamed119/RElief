@@ -94,7 +94,7 @@
           <td>{{ pickRole(row) }}</td>
           <td>
             <button type="button" class="link-profile" (click)="openProfile(row)">
-              View profile
+              <i class="fa-solid fa-eye"></i> View profile
             </button>
           </td>
         </tr>
@@ -121,86 +121,79 @@
     </div>
   </div>
 
-  <div *ngIf="selectedUserId" class="modal" (click)="closeProfile()">
-    <div class="modal-content profile-modal" (click)="$event.stopPropagation()">
-      <div class="profile-modal-head">
-        <div class="profile-avatar-wrap">
-          <div class="profile-avatar" *ngIf="profileLoading">…</div>
-          <img
-            *ngIf="!profileLoading && profileHeaderPhoto as photo"
-            class="profile-head-thumb"
-            [src]="photo"
-            alt=""
-          />
-          <div class="profile-avatar" *ngIf="!profileLoading && profileDetail && !profileHeaderPhoto">
-            {{ profileInitial }}
-          </div>
-        </div>
-        <div class="profile-head-text">
-          <h2>{{ profileHeadline }}</h2>
-          <p class="modal-meta">User ID: {{ selectedUserId }}</p>
-        </div>
-        <button type="button" class="modal-close" (click)="closeProfile()" aria-label="Close">×</button>
-      </div>
-
-      <div *ngIf="profileLoading" class="loading-inline">Loading profile…</div>
-
-      <div *ngIf="!profileLoading && profileDetail" class="profile-body">
-        <ng-container *ngFor="let sec of profileSections()">
-          <section class="profile-section">
-            <h3 class="profile-section-title">{{ sec.title }}</h3>
-            <div class="profile-section-rows">
-              <ng-container *ngFor="let row of sec.rows">
-                <div
-                  *ngIf="showProfileRow(row)"
-                  class="profile-field"
-                  [class.profile-field--photo]="isProfileImageUrlRow(row)"
-                >
-                  <div class="profile-field-label">{{ row.label }}</div>
-                  <div class="profile-field-cell">
-                    <a
-                      *ngIf="isProfileImageUrlRow(row)"
-                      class="profile-photo-link"
-                      [href]="row.value"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img class="profile-inline-photo" [src]="row.value" alt="" />
-                    </a>
-                    <pre *ngIf="row.isStructured && !isProfileImageUrlRow(row)" class="profile-json">{{
-                      formatProfileCell(row.value, row.key)
-                    }}</pre>
-                    <div
-                      *ngIf="!row.isStructured && !isProfileImageUrlRow(row) && isProfileFileIdRow(row)"
-                      class="profile-field-value profile-field-file"
-                    >
-                      <code class="profile-file-id">{{ formatProfileCell(row.value, row.key) }}</code>
-                      <button
-                        type="button"
-                        class="btn-view-doc"
-                        (click)="openProfileDocument(row.value)"
-                        [disabled]="fileOpeningId === (row.value + '')"
-                      >
-                        {{ fileOpeningId === (row.value + '') ? 'Opening…' : 'View document' }}
-                      </button>
-                    </div>
-                    <div
-                      *ngIf="!row.isStructured && !isProfileImageUrlRow(row) && !isProfileFileIdRow(row)"
-                      class="profile-field-value"
-                    >
-                      {{ formatProfileCell(row.value, row.key) }}
-                    </div>
-                  </div>
-                </div>
-              </ng-container>
+<div *ngIf="selectedUserId" class="modal" (click)="closeProfile()">
+    <div class="modal-content ver-profile-modal" (click)="$event.stopPropagation()">
+<div class="ver-profile-head">
+  <div class="ver-profile-avatar">
+    <img *ngIf="getProfilePhotoUrl()" [src]="getProfilePhotoUrl()" alt="" class="profile-photo" (error)="onPhotoError($event)" />
+    <span *ngIf="!getProfilePhotoUrl()">{{ profileInitial }}</span>
+  </div>
+  <div class="ver-profile-titles">
+    <h2>{{ profileHeadline }}</h2>
+    <p class="modal-meta">{{ profileDetail?.['role'] }}</p>
+  </div>
+  <button type="button" class="ver-profile-close" (click)="closeProfile()" aria-label="Close">×</button>
+</div>
+      <div *ngIf="profileLoading || docsLoading" class="ver-profile-loading">Loading profile{{ docsLoading ? ' & documents' : '' }}…</div>
+      <div *ngIf="!profileLoading && !docsLoading && profileDetail" class="ver-profile-body">
+        <!-- Basic Information -->
+        <section class="ver-profile-section">
+          <h3 class="ver-profile-section-title">Basic Information</h3>
+          <div class="ver-profile-section-rows">
+            <div class="ver-profile-field">
+              <div class="ver-profile-key">Name</div>
+              <div class="ver-profile-val">{{ profileHeadline }}</div>
             </div>
-          </section>
-        </ng-container>
-      </div>
+            <div class="ver-profile-field">
+              <div class="ver-profile-key">Email</div>
+              <div class="ver-profile-val">{{ profileDetail['email'] || 'N/A' }}</div>
+            </div>
+            <div class="ver-profile-field">
+              <div class="ver-profile-key">Role</div>
+              <div class="ver-profile-val">{{ profileDetail['role'] || 'N/A' }}</div>
+            </div>
+            <div class="ver-profile-field">
+              <div class="ver-profile-key">Phone</div>
+              <div class="ver-profile-val">{{ profileDetail['phoneNumber'] || profileDetail['phone'] || 'N/A' }}</div>
+            </div>
+            <div class="ver-profile-field">
+              <div class="ver-profile-key">Date of Birth</div>
+              <div class="ver-profile-val">{{ profileDetail['dateOfBirth'] || 'N/A' }}</div>
+            </div>
+          </div>
+        </section>
 
-      <div class="modal-actions">
+        <!-- Verification Documents (PSW only) -->
+        <section *ngIf="profileDetail['role'] === 'PSW'" class="ver-profile-section">
+          <h3 class="ver-profile-section-title">Verification Documents</h3>
+          <div class="docs-list">
+            <div *ngIf="documentFiles.length === 0" class="text-center py-4 text-muted">
+              <i class="fas fa-folder-open fa-2x mb-2"></i>
+              <p>No documents uploaded yet.</p>
+            </div>
+            <div *ngIf="documentFiles.length > 0" class="docs-grid">
+              <div *ngFor="let doc of documentFiles" class="doc-card">
+                <div class="doc-icon">
+                  <i class="fas {{ doc.icon }}"></i>
+                </div>
+                <p class="doc-name">{{ doc.name }}</p>
+                <button 
+                  *ngIf="!doc.loading" 
+                  class="view-btn" 
+                  (click)="openProfileDocument(doc.fileId!)"
+                  [disabled]="fileOpeningId === doc.fileId">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                <span *ngIf="doc.loading" class="badge bg-light text-muted">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="modal-actions ver-profile-actions">
         <button type="button" class="btn-cancel" (click)="closeProfile()">Close</button>
       </div>
     </div>
   </div>
+
 </div>

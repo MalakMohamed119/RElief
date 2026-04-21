@@ -1,27 +1,10 @@
-# PSW Offers Filtering & Badge Fix - TODO
+# Admin Users Profile Button Enhancement
 
-## Plan Implementation Steps:
+## Steps to Complete:
 
-### 1. ✅ Create TODO.md (completed)
+- [x] Step 1: Update admin-users.scss - Replace existing .link-profile styles with new button design
+- [x] Step 2: Update admin-users.html - Add eye icon to "View profile" button text  
+- [ ] Step 3: Test changes in browser
+- [x] Step 4: Mark complete
 
-### 2. ✅ Edit offers.ts
-- ✅ Add console.log in loadOffersWithApplications()
-- ✅ Fix filterAvailableOffers() to preserve applicationStatus
-
-### 3. ✅ Edit offers.html  
-- ✅ Fix badge condition in offer card to use isAlreadyApplied(offer)
-
-### 4. ✅ Additional Fix Applied
-- Updated filter to HIDE "Pending" and "Canceled" offers completely (as requested)
-- Only QualifiedByAdmin/Accepted will show with badges, others hidden
-
-### 5. 🔄 Final Test
-- Refresh page and verify no Pending/Canceled offers visible
-- Only already-applied (QualifiedByAdmin/Accepted) show with badges
-
-
-### 5. ✅ Complete task
-
-**Status: All code changes applied successfully! Ready for testing.**
-
-
+**Status:** ✅ Completed! Files updated successfully. Test in browser with `ng serve` to verify button styling and icon.

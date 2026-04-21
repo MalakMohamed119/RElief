@@ -20,6 +20,11 @@ import {
   type ProfileViewSection,
 } from '../../../../core/utils/admin-profile-view';
 
+interface DocumentFile {
+  name: string; icon: string; rawFile: any;
+  fileId: string | null; url: string | null; loading: boolean;
+}
+
 @Component({
   selector: 'app-admin-users',
   standalone: true,
@@ -37,24 +42,29 @@ export class AdminUsers implements OnInit {
   readonly isProfileImageUrlRow = isProfileImageUrlRow;
   readonly isProfileFileIdRow = isProfileFileIdRow;
 
+  readonly docConfig = [
+    { key: 'proofIdentityFile', name: 'Proof of Identity', icon: 'fa-id-card' },
+    { key: 'pswCertificateFile', name: 'PSW Certificate', icon: 'fa-certificate' },
+    { key: 'cvFile', name: 'CV / Resume', icon: 'fa-file-pdf' },
+    { key: 'immunizationRecordFile', name: 'Immunization Record', icon: 'fa-syringe' },
+    { key: 'criminalRecordFile', name: 'Criminal Record Check', icon: 'fa-shield-alt' },
+    { key: 'firstAidOrCPRFile', name: 'First Aid / CPR', icon: 'fa-heart' },
+  ];
+
   fileOpeningId: string | null = null;
+  documentFiles: DocumentFile[] = [];
+  docsLoading = false;
 
   viewMode: 'directory' | 'psw' = 'directory';
-
   private allRows: Record<string, unknown>[] = [];
-
   rows: Record<string, unknown>[] = [];
   isLoading = true;
   error: string | null = null;
-
   searchInput = '';
   pageIndex = 0;
   pageSize = 12;
-
   roleFilter = '';
-
   verificationFilter: '' | 'None' | 'Pending' | 'Approved' | 'Rejected' = '';
-
   profileLoading = false;
   profileDetail: Record<string, unknown> | null = null;
   selectedUserId: string | null = null;
@@ -127,19 +137,16 @@ export class AdminUsers implements OnInit {
       return;
     }
 
-    // In directory mode, get all users including PSW
     this.admin.getUsersPaged().subscribe({
       next: ({ items }) => {
         const allUsers = (items as Record<string, unknown>[]) ?? [];
         console.log('Directory mode - general users loaded:', allUsers.length);
         
-        // Also get PSW users to ensure they're included
         this.admin.getPswUsersPaged().subscribe({
           next: ({ items: pswItems }) => {
             const pswUsers = (pswItems as Record<string, unknown>[]) ?? [];
             console.log('Directory mode - PSW users loaded:', pswUsers.length);
             
-            // Combine both lists and remove duplicates
             const combinedUsers = [...allUsers, ...pswUsers];
             const uniqueUsers = combinedUsers.filter((user, index, self) => 
               index === self.findIndex((u: any) => u['id'] === user['id'])
@@ -254,6 +261,7 @@ export class AdminUsers implements OnInit {
     return v != null ? String(v) : '—';
   }
 
+
   openProfile(row: Record<string, unknown>): void {
     const id = this.pickId(row);
     if (!id) {
@@ -272,6 +280,7 @@ export class AdminUsers implements OnInit {
           (data != null && typeof data === 'object' && !Array.isArray(data)
             ? (data as Record<string, unknown>)
             : { value: data as unknown });
+        this.loadProfileDocuments();
         this.profileLoading = false;
         this.cdr.detectChanges();
       },
@@ -290,7 +299,78 @@ export class AdminUsers implements OnInit {
   closeProfile(): void {
     this.selectedUserId = null;
     this.profileDetail = null;
+    this.documentFiles = [];
+    this.docsLoading = false;
     this.fileOpeningId = null;
+  }
+
+  getProfilePhotoUrl(): string | null {
+    const photo = this.profileDetail?.['profilePhoto'] as any;
+    return photo?.url || null;
+  }
+
+  onPhotoError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  loadProfileDocuments(): void {
+    if (!this.profileDetail) {
+      this.docsLoading = false;
+      return;
+    }
+
+    if (this.profileDetail['role'] !== 'PSW') {
+      this.documentFiles = [];
+      this.docsLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.documentFiles = this.docConfig.map(cfg => {
+      const fileData = (this.profileDetail as any)[cfg.key];
+      if (!fileData || !fileData.id) {
+        return null;
+      }
+      return {
+        name: cfg.name,
+        icon: cfg.icon,
+        rawFile: fileData,
+        fileId: fileData.id,
+        url: null,
+        loading: true
+      };
+    }).filter(Boolean) as DocumentFile[];
+
+    const pending = [...this.documentFiles];
+    let resolved = 0;
+
+    if (pending.length === 0) {
+      this.docsLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    pending.forEach(doc => {
+      this.files.getDownloadUrl(doc.fileId!).subscribe({
+        next: (url) => {
+          doc.url = typeof url === 'string' ? url : (url as any)?.url || null;
+          doc.loading = false;
+          resolved++;
+          if (resolved >= pending.length) {
+            this.docsLoading = false;
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          doc.loading = false;
+          resolved++;
+          if (resolved >= pending.length) {
+            this.docsLoading = false;
+          }
+          this.cdr.detectChanges();
+        }
+      });
+    });
   }
 
   openProfileDocument(fileId: unknown): void {
