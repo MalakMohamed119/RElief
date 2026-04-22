@@ -66,7 +66,15 @@ export class AdminUsers implements OnInit {
   roleFilter = '';
   verificationFilter: '' | 'None' | 'Pending' | 'Approved' | 'Rejected' = '';
   profileLoading = false;
-  profileDetail: Record<string, unknown> | null = null;
+profileDetail: Record<string, unknown> | null = null;
+
+  get formattedDob(): string {
+    const dobRaw = this.profileDetail?.['dateOfBirth'];
+    if (!dobRaw) return 'N/A';
+    const date = new Date(dobRaw as string);
+    return isNaN(date.getTime()) ? String(dobRaw) : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   selectedUserId: string | null = null;
 
   ngOnInit(): void {

@@ -1,3 +1,4 @@
+
 .admin-page {
   padding: 2rem;
   max-width: 1400px;
@@ -127,62 +128,200 @@
   color: #94a3b8;
 }
 
-// Cards Grid
+// Cards Grid - Fixed
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
 }
 
 .offer-card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  transition: all 0.3s ease;
   border: 1px solid #e2e8f0;
-
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
   }
 }
 
+// Header - Fixed alignment
 .card-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
 .offer-icon {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  font-size: 1.4rem;
 }
 
 .offer-info {
   flex: 1;
-
+  min-width: 0;
+  
   h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.125rem;
-    font-weight: 600;
+    margin: 0 0 0.2rem;
+    font-size: 1rem;
+    font-weight: 700;
     color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  h4.offer-position {
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+}
+
+// Info rows - Fixed alignment
+.card-body {
+  flex: 1;
+  padding: 1.25rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 1rem;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.info-value {
+  font-size: 0.8rem;
+  color: #1e293b;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+  flex: 1;
+}
+
+.rate-value {
+  color: #059669;
+  font-weight: 700;
+}
+
+.shift-details {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.preferences-section {
+  margin-top: 1rem;
+}
+
+.pref-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.pref-tag {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.shift-count-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #0284c7;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 2rem;
+  border-radius: 12px;
+}
+
+.pagination-info {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 .status-badge {
-  display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -201,55 +340,111 @@
   color: #64748b;
 }
 
-.card-body {
-  padding: 1.5rem;
-}
+@media (max-width: 768px) {
+  .admin-page {
+    padding: 1rem;
+  }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f1f5f9;
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 
-  &:last-of-type {
-    border-bottom: none;
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .info-value {
+    text-align: left;
   }
 }
 
-.info-label {
-  font-size: 0.875rem;
-  color: #64748b;
-  font-weight: 500;
+.shift-status-badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
-.info-value {
-  font-size: 0.875rem;
-  color: #1e293b;
-  font-weight: 500;
-  text-align: right;
-}
-
-.rate-value {
+.badge-available {
+  padding: 0.2rem 0.6rem;
+  background: #dcfce7;
   color: #16a34a;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
-.shift-count-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-  border-radius: 10px;
-  color: #0284c7;
-  font-weight: 600;
-  font-size: 0.875rem;
+.badge-booked {
+  padding: 0.2rem 0.6rem;
+  background: #fef3c7;
+  color: #d97706;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
-.shift-icon {
-  font-size: 1rem;
+.badge-no-shifts {
+  padding: 0.2rem 0.6rem;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.poster-type-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.shifts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem 0.75rem;
+}
+
+.shift-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  
+  &.shift-chip--booked {
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+}
+
+.shift-date {
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 45px;
+}
+
+.shift-time {
+  color: #475569;
+  flex: 1;
+}
+
+.shift-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  
+  &.available { background: #22c55e; }
+  &.booked { background: #f59e0b; }
 }
 

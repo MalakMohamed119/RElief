@@ -14,13 +14,21 @@ interface OfferItem {
   offerId?: string;
   id?: string;
   title?: string;
+  position?: string;
   jobTitle?: string;
   description?: string;
   address?: string;
+  address2?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  posterName?: string;
+  posterType?: string;
   hourlyRate?: number;
   careHomeId?: string;
   careHomeName?: string;
   shifts: ShiftItem[];
+  preferences?: string[];
   createdAt?: string;
   isActive?: boolean;
 }
@@ -31,6 +39,7 @@ interface ShiftItem {
   startTime: string;
   endTime: string;
   isBooked: boolean;
+  isAvailable?: boolean;
 }
 
 @Component({
@@ -70,10 +79,10 @@ export class AdminOffers implements OnInit {
   private get filteredAll(): OfferItem[] {
     return clientFilterSearch(this.allOffers, this.searchInput, (o) =>
       [
-        o.title || o.jobTitle || '',
+        o.title || o.jobTitle || o.position || '',
         o.description || '',
-        o.address || '',
-        o.careHomeName || '',
+        o.address || o.city || o.province || '',
+        o.posterName || o.careHomeName || '',
       ]
         .filter(Boolean)
         .join(' ')
@@ -88,7 +97,13 @@ export class AdminOffers implements OnInit {
       next: (response: any) => {
         console.log('API Response:', response);
         const extractedItems = response.items || response.data || (Array.isArray(response) ? response : []);
-        this.allOffers = Array.isArray(extractedItems) ? extractedItems : [];
+        this.allOffers = Array.isArray(extractedItems) ? extractedItems.map(item => ({
+          ...item,
+          posterName: item.careHomeName || item.posterName,
+          posterType: 'Care Home',
+          position: item.position || item.jobTitle,
+        })) : [];
+        console.log('Normalized offers:', this.allOffers[0]);
         this.isLoading = false;
         this.applyLocalPage();
         this.cdr.detectChanges();
@@ -159,12 +174,40 @@ export class AdminOffers implements OnInit {
     return offer.title || offer.jobTitle || 'Untitled Offer';
   }
 
-  getCareHomeName(offer: OfferItem): string {
-    return offer.careHomeName || 'N/A';
+  getPosition(offer: OfferItem): string {
+    return offer.position || offer.jobTitle || '';
+  }
+
+getPosterInfo(offer: OfferItem): string {
+    const name = offer.posterName || offer.careHomeName || 'N/A';
+    return name;
+  }
+
+  getAvailabilityStatus(offer: any): { available: number; booked: number } {
+    const shifts = offer.shifts || [];
+    const available = shifts.filter((s: any) => s.isAvailable).length;
+    const booked = shifts.filter((s: any) => !s.isAvailable).length;
+    return { available, booked };
+  }
+
+  getTruncatedDescription(offer: OfferItem): string {
+    const desc = offer.description || '';
+    return desc.length > 100 ? desc.slice(0, 100) + '...' : desc || 'No description';
+  }
+
+  getFullAddress(offer: OfferItem): string {
+    const parts = [offer.address, offer.address2, offer.city, offer.province, offer.postalCode].filter(Boolean);
+    return parts.join(', ') || 'Address not specified';
   }
 
   getAddress(offer: OfferItem): string {
-    return offer.address || 'N/A';
+    const parts = [offer.address, offer.city, offer.province, offer.postalCode]
+      .filter(p => p && String(p).trim());
+    return parts.join(', ') || 'N/A';
+  }
+
+  getCareHomeName(offer: OfferItem): string {
+    return offer.careHomeName || offer.posterName || 'N/A';
   }
 
   getHourlyRate(offer: OfferItem): string {
@@ -179,14 +222,30 @@ export class AdminOffers implements OnInit {
   getShiftDates(offer: OfferItem): string {
     if (!offer.shifts || offer.shifts.length === 0) return 'No shifts';
 
-    const dates = offer.shifts.slice(0, 3).map((s) =>
-      new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    );
+    const dates = offer.shifts.slice(0, 3).map((s) => {
+      const date = new Date(s.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+      const time = `${s.startTime} - ${s.endTime}`;
+      const status = (s.isAvailable ?? !s.isBooked) ? 'Available' : 'Booked';
+      return `${date} ${time} (${status})`;
+    });
 
     if (offer.shifts.length > 3) {
-      return dates.join(', ') + ` +${offer.shifts.length - 3} more`;
+      return `${dates.join(', ')} +${offer.shifts.length - 3} more`;
     }
     return dates.join(', ');
+  }
+
+  getShiftsSummary(offer: OfferItem): string {
+    const count = this.getShiftCount(offer);
+    return count === 0 ? 'No shifts' : `${count} shift${count > 1 ? 's' : ''}`;
+  }
+
+  getShiftSummary(offer: OfferItem): string {
+    return this.getShiftsSummary(offer);
+  }
+
+  getPreferences(offer: OfferItem): string[] {
+    return offer.preferences || [];
   }
 
   getStatus(offer: OfferItem): string {

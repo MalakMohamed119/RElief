@@ -1,3 +1,4 @@
+
 <div class="admin-page">
   <div class="admin-header">
     <div class="header-left">
@@ -21,7 +22,7 @@
         type="search"
         [(ngModel)]="searchInput"
         (input)="onSearch()"
-        placeholder="Title, care home, address…"
+        placeholder="Title, position, care home, address…"
       />
     </div>
     <div class="toolbar-field">
@@ -72,16 +73,32 @@
         <div class="offer-icon">💼</div>
         <div class="offer-info">
           <h3>{{ getTitle(offer) }}</h3>
-          <span class="status-badge" [class.active]="getStatus(offer) === 'Active'" [class.inactive]="getStatus(offer) === 'Inactive'">
-            {{ getStatus(offer) }}
-          </span>
+          <h4 *ngIf="getPosition(offer)" class="offer-position">{{ getPosition(offer) }}</h4>
+<div class="shift-status-badges">
+     <span class="badge-available" *ngIf="getAvailabilityStatus(offer).available > 0">
+       {{ getAvailabilityStatus(offer).available }} Available
+     </span>
+     <span class="badge-booked" *ngIf="getAvailabilityStatus(offer).booked > 0">
+       {{ getAvailabilityStatus(offer).booked }} Booked
+     </span>
+     <span class="badge-no-shifts" *ngIf="(offer.shifts || []).length === 0">
+       No Shifts
+     </span>
+   </div>
         </div>
       </div>
 
       <div class="card-body">
         <div class="info-row">
-          <span class="info-label">🏠 Care Home</span>
-          <span class="info-value">{{ getCareHomeName(offer) }}</span>
+          <span class="info-label">👤 Posted by</span>
+<span class="info-value">
+     {{ offer.posterName }}
+     <span class="poster-type-badge">{{ offer.posterType }}</span>
+   </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📝 Description</span>
+          <span class="info-value">{{ getTruncatedDescription(offer) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">📍 Address</span>
@@ -93,12 +110,26 @@
         </div>
         <div class="info-row">
           <span class="info-label">📅 Shifts</span>
-          <span class="info-value">{{ getShiftDates(offer) }}</span>
+          <span class="info-value">{{ getShiftSummary(offer) }}</span>
         </div>
-        <div class="shift-count-badge">
-          <span class="shift-icon">📆</span>
-          <span>{{ getShiftCount(offer) }} shift(s) total</span>
+<div class="shifts-list">
+     <div *ngFor="let shift of (offer.shifts || [])" class="shift-chip" [class.shift-chip--booked]="!shift.isAvailable">
+       <span class="shift-date">{{ shift.date | date:'d MMM' }}</span>
+       <span class="shift-time">{{ shift.startTime?.slice(0,5) }} - {{ shift.endTime?.slice(0,5) }}</span>
+       <span class="shift-status-dot" [class.available]="shift.isAvailable" [class.booked]="!shift.isAvailable"></span>
+     </div>
+   </div>
+        <div *ngIf="getPreferences(offer).length > 0" class="preferences-section">
+          <span class="info-label">🏷️ Preferences</span>
+          <div class="pref-tags">
+            <span *ngFor="let pref of getPreferences(offer)" class="status-badge pref-tag">{{ pref }}</span>
+          </div>
         </div>
+      </div>
+
+      <div class="shift-count-badge">
+        <span class="shift-icon">📆</span>
+        <span>{{ getShiftCount(offer) }} shift{{ getShiftCount(offer) !== 1 ? 's' : '' }} total</span>
       </div>
     </div>
   </div>
@@ -122,3 +153,4 @@
     </div>
   </div>
 </div>
+
