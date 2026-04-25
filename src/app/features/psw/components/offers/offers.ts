@@ -151,7 +151,8 @@ export class PswOffers implements OnInit {
       next: (results: any[]) => {
         this.availableOffers = results
           .filter(r => r.hasShifts)
-          .map(r => ({ ...r.offer, applicationStatus: r.offer.applicationStatus } as BrowseOffer));
+          .map(r => ({ ...r.offer, applicationStatus: r.offer.applicationStatus } as BrowseOffer))
+          .filter(offer => !this.isAlreadyApplied(offer));
 
         this.loadingAvailability = false;
         this.cdr.detectChanges();

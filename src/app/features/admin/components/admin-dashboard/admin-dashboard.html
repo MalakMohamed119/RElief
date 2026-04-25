@@ -1,126 +1,182 @@
-<div class="admin-page">
-  <!-- Welcome Header -->
-  <div class="welcome-header">
-    <div class="welcome-content">
-      <h1>Welcome, Admin! 👋</h1>
-      <p>Manage PSW verifications, applications, and offers from here.</p>
-    </div>
-    <div class="welcome-actions">
-      <button type="button" class="logout-btn" (click)="onLogout()" title="Logout">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        <span>Logout</span>
-      </button>
-      <div class="welcome-icon">
+<div class="admin-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
+      <div>
+        <div class="logo-text">PSW Admin</div>
+        <div class="logo-sub">Control Panel</div>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="loadError" class="dashboard-error">{{ loadError }}</div>
-
-  <!-- Statistics Cards -->
-  <div class="stats-grid">
-    <div class="stat-card verifications">
-      <div class="stat-icon">
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item">
+        <i class="fa-solid fa-gauge-high"></i>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item">
         <i class="fa-solid fa-user-check"></i>
+        <span>Verifications</span>
       </div>
-      <div class="stat-info">
-        <span class="stat-number">{{ isLoading ? '—' : stats.verifications }}</span>
-        <span class="stat-label">Pending Verifications</span>
-      </div>
-      <a routerLink="/admin/verifications" class="stat-link">
-        View All <i class="fa-solid fa-arrow-right"></i>
-      </a>
-    </div>
-
-    <div class="stat-card applications">
-      <div class="stat-icon">
+      <div class="nav-item">
         <i class="fa-solid fa-file-signature"></i>
+        <span>Applications</span>
       </div>
-      <div class="stat-info">
-        <span class="stat-number">{{ isLoading ? '—' : stats.applications }}</span>
-        <span class="stat-label">Pending Applications</span>
-      </div>
-      <a routerLink="/admin/applications" class="stat-link">
-        View All <i class="fa-solid fa-arrow-right"></i>
-      </a>
-    </div>
 
-    <div class="stat-card offers">
-      <div class="stat-icon">
+      <div class="nav-section-label">Manage</div>
+      <div class="nav-item">
         <i class="fa-solid fa-briefcase"></i>
+        <span>Offers</span>
       </div>
-      <div class="stat-info">
-        <span class="stat-number">{{ isLoading ? '—' : stats.offers }}</span>
-        <span class="stat-label">Total Offers</span>
+      <div class="nav-item">
+        <i class="fa-solid fa-users"></i>
+        <span>Users</span>
       </div>
-      <a routerLink="/admin/offers" class="stat-link">
-        View All <i class="fa-solid fa-arrow-right"></i>
-      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar">AD</div>
+      <div class="user-info">
+        <span class="user-name">Admin</span>
+        <span class="user-role">Super Admin</span>
+      </div>
+      <button class="logout-side-btn" (click)="onLogout()" title="Logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+      <div class="welcome-content">
+        <div class="welcome-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          Admin Panel
+        </div>
+        <h1>Welcome back, Admin 👋</h1>
+        <p>Manage PSW verifications, applications, and offers from here.</p>
+      </div>
+      <div class="welcome-actions">
+        <button type="button" class="logout-btn" (click)="onLogout()" title="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+      <div class="header-decoration">
+        <div class="deco-circle c1"></div>
+        <div class="deco-circle c2"></div>
+        <div class="deco-circle c3"></div>
+      </div>
     </div>
 
-    <div class="stat-card users">
-      <div class="stat-icon">
-        <i class="fa-solid fa-users"></i>
+    <div class="content">
+
+      <div *ngIf="loadError" class="dashboard-error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{ loadError }}
       </div>
-      <div class="stat-info">
-        <span class="stat-number">{{ isLoading ? '—' : stats.users }}</span>
-        <span class="stat-label">Users</span>
+
+      <!-- Statistics -->
+      <p class="section-label">Overview</p>
+      <div class="stats-grid">
+        <a routerLink="/admin/verifications" class="stat-card verifications">
+          <div class="stat-card-top">
+            <div class="stat-icon"><i class="fa-solid fa-user-check"></i></div>
+            <span class="stat-tag">Pending</span>
+          </div>
+          <span class="stat-number">{{ isLoading ? '—' : stats.verifications }}</span>
+          <span class="stat-label">Pending Verifications</span>
+          <div class="stat-footer">View All <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a routerLink="/admin/applications" class="stat-card applications">
+          <div class="stat-card-top">
+            <div class="stat-icon"><i class="fa-solid fa-file-signature"></i></div>
+            <span class="stat-tag">Pending</span>
+          </div>
+          <span class="stat-number">{{ isLoading ? '—' : stats.applications }}</span>
+          <span class="stat-label">Pending Applications</span>
+          <div class="stat-footer">View All <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a routerLink="/admin/offers" class="stat-card offers">
+          <div class="stat-card-top">
+            <div class="stat-icon"><i class="fa-solid fa-briefcase"></i></div>
+            <span class="stat-tag">Total</span>
+          </div>
+          <span class="stat-number">{{ isLoading ? '—' : stats.offers }}</span>
+          <span class="stat-label">Total Offers</span>
+          <div class="stat-footer">View All <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a routerLink="/admin/users" class="stat-card users">
+          <div class="stat-card-top">
+            <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+            <span class="stat-tag">Total</span>
+          </div>
+          <span class="stat-number">{{ isLoading ? '—' : stats.users }}</span>
+          <span class="stat-label">Total Users</span>
+          <div class="stat-footer">View All <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
       </div>
-      <a routerLink="/admin/users" class="stat-link">
-        View All <i class="fa-solid fa-arrow-right"></i>
-      </a>
+
+      <!-- Quick Actions -->
+      <p class="section-label">Quick Actions</p>
+      <div class="admin-links">
+        <a routerLink="/admin/verifications" class="admin-card">
+          <div class="card-icon verifications">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div class="card-content">
+            <h2>Verifications</h2>
+            <p>Review PSW documents and verify accounts</p>
+          </div>
+          <div class="card-badge" *ngIf="stats.verifications > 0">{{ stats.verifications }}</div>
+          <i class="fa-solid fa-chevron-right card-arrow"></i>
+        </a>
+
+        <a routerLink="/admin/applications" class="admin-card">
+          <div class="card-icon applications">
+            <i class="fa-solid fa-clipboard-list"></i>
+          </div>
+          <div class="card-content">
+            <h2>Applications</h2>
+            <p>Approve or reject job applications</p>
+          </div>
+          <div class="card-badge" *ngIf="stats.applications > 0">{{ stats.applications }}</div>
+          <i class="fa-solid fa-chevron-right card-arrow"></i>
+        </a>
+
+        <a routerLink="/admin/offers" class="admin-card">
+          <div class="card-icon offers">
+            <i class="fa-solid fa-handshake"></i>
+          </div>
+          <div class="card-content">
+            <h2>Offers</h2>
+            <p>View all job offers in the system</p>
+          </div>
+          <i class="fa-solid fa-chevron-right card-arrow"></i>
+        </a>
+
+        <a routerLink="/admin/users" class="admin-card">
+          <div class="card-icon users">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="card-content">
+            <h2>Users</h2>
+            <p>Browse users, PSW directory, and profiles</p>
+          </div>
+          <i class="fa-solid fa-chevron-right card-arrow"></i>
+        </a>
+      </div>
+
     </div>
-  </div>
-
-  <!-- Navigation Cards -->
-  <h2 class="section-title">Quick Actions</h2>
-  <div class="admin-links">
-    <a routerLink="/admin/verifications" class="admin-card">
-      <div class="card-icon verifications">
-        <i class="fa-solid fa-user-shield"></i>
-      </div>
-      <div class="card-content">
-        <h2>Verifications</h2>
-        <p>Review PSW documents and verify accounts</p>
-      </div>
-      <div class="card-badge" *ngIf="stats.verifications > 0">
-        {{ stats.verifications }}
-      </div>
-    </a>
-
-    <a routerLink="/admin/applications" class="admin-card">
-      <div class="card-icon applications">
-        <i class="fa-solid fa-clipboard-list"></i>
-      </div>
-      <div class="card-content">
-        <h2>Applications</h2>
-        <p>Approve or reject job applications</p>
-      </div>
-      <div class="card-badge" *ngIf="stats.applications > 0">
-        {{ stats.applications }}
-      </div>
-    </a>
-
-    <a routerLink="/admin/offers" class="admin-card">
-      <div class="card-icon offers">
-        <i class="fa-solid fa-handshake"></i>
-      </div>
-      <div class="card-content">
-        <h2>Offers</h2>
-        <p>View all job offers in the system</p>
-      </div>
-    </a>
-
-    <a routerLink="/admin/users" class="admin-card">
-      <div class="card-icon users">
-        <i class="fa-solid fa-users"></i>
-      </div>
-      <div class="card-content">
-        <h2>Users</h2>
-        <p>Browse users, PSW directory, and profiles</p>
-      </div>
-    </a>
   </div>
 </div>
-

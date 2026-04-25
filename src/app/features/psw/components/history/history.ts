@@ -55,6 +55,7 @@ export class History implements OnInit {
   applications: PswApplicationPresenter[] = [];
   isLoading = true;
   selectedApp: PswApplicationPresenter | null = null;
+  activeTab: 'all' | 'pending' | 'accepted' | 'rejected' | 'cancelled' = 'all';
 
   constructor(
     private pswApplicationsService: PswApplicationsService,
@@ -112,4 +113,13 @@ export class History implements OnInit {
   getAcceptedCount(): number  { return this.applications.filter(a => a.statusLabel === 'accepted').length; }
   getRejectedCount(): number  { return this.applications.filter(a => a.statusLabel === 'rejected').length; }
   getCancelledCount(): number { return this.applications.filter(a => a.statusLabel === 'cancelled').length; }
+
+  setTab(tab: 'all' | 'pending' | 'accepted' | 'rejected' | 'cancelled'): void {
+    this.activeTab = this.activeTab === tab ? 'all' : tab;
+  }
+
+  get filteredApplications(): PswApplicationPresenter[] {
+    if (this.activeTab === 'all') return this.applications;
+    return this.applications.filter(a => a.statusLabel === this.activeTab);
+  }
 }

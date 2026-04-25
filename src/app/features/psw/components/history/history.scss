@@ -122,6 +122,60 @@ $radius-xl: 24px;
   }
 }
 
+// Tabs Bar
+.tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+
+  .tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid $border-color;
+    background: $white;
+    color: $text-secondary;
+    transition: all 0.2s ease;
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 11px;
+      background: $bg-light;
+      color: $text-secondary;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    &.active {
+      background: $gradient;
+      color: $white;
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba($primary-color, 0.3);
+
+      .badge {
+        background: rgba($white, 0.25);
+        color: $white;
+      }
+    }
+
+    &:hover:not(.active) {
+      background: $bg-light;
+      color: $text-primary;
+    }
+  }
+}
+
 // Stats Row
 .stats-row {
   display: grid;
@@ -138,6 +192,27 @@ $radius-xl: 24px;
   background: $white;
   border-radius: $radius-lg;
   box-shadow: $shadow-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+
+  &.active {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &.pending.active {
+    border-color: $warning-color;
+  }
+  &.accepted.active {
+    border-color: $success-color;
+  }
+  &.rejected.active {
+    border-color: $danger-color;
+  }
+  &.cancelled.active {
+    border-color: #6b7280;
+  }
 
   .stat-icon {
     width: 48px;

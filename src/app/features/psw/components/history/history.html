@@ -28,28 +28,28 @@
 
     <!-- Stats -->
     <div class="stats-row" *ngIf="!isLoading && applications.length > 0">
-      <div class="stat-box">
+      <div class="stat-box pending" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
         <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getPendingCount() }}</span>
           <span class="stat-label">Pending</span>
         </div>
       </div>
-      <div class="stat-box">
+      <div class="stat-box accepted" [class.active]="activeTab === 'accepted'" (click)="setTab('accepted')">
         <div class="stat-icon accepted"><i class="fas fa-check-circle"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getAcceptedCount() }}</span>
           <span class="stat-label">Accepted</span>
         </div>
       </div>
-      <div class="stat-box">
+      <div class="stat-box rejected" [class.active]="activeTab === 'rejected'" (click)="setTab('rejected')">
         <div class="stat-icon rejected"><i class="fas fa-times-circle"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getRejectedCount() }}</span>
           <span class="stat-label">Rejected</span>
         </div>
       </div>
-      <div class="stat-box">
+      <div class="stat-box cancelled" [class.active]="activeTab === 'cancelled'" (click)="setTab('cancelled')">
         <div class="stat-icon cancelled"><i class="fas fa-ban"></i></div>
         <div class="stat-info">
           <span class="stat-value">{{ getCancelledCount() }}</span>
@@ -59,8 +59,8 @@
     </div>
 
     <!-- Cards -->
-    <div class="applications-grid" *ngIf="!isLoading && applications.length > 0">
-      <div *ngFor="let app of applications"
+    <div class="applications-grid" *ngIf="!isLoading && filteredApplications.length > 0">
+      <div *ngFor="let app of filteredApplications"
            class="application-card"
            [ngClass]="'status-' + app.statusLabel">
 

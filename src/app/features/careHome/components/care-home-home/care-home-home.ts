@@ -253,10 +253,14 @@ export class CareHomeHome implements OnInit, AfterViewInit {
   }
 
   private toTimeHHmmss(value: string): string {
-    if (!value) return '08:00:00';
+    if (!value) return '08:00:00.0000000';
     const parts = String(value).trim().split(':');
-    if (parts.length >= 2) return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
-    return '08:00:00';
+    if (parts.length >= 2) {
+      const h = parts[0].padStart(2, '0');
+      const m = parts[1].padStart(2, '0');
+      return `${h}:${m}:00.0000000`;
+    }
+    return '08:00:00.0000000';
   }
 
   submitRequest(): void {
@@ -268,21 +272,21 @@ export class CareHomeHome implements OnInit, AfterViewInit {
     }
     const v = this.requestForm.value;
     const payload: CreateJobOfferDto = {
-      title: String(v.title ?? ''),
-      description: String(v.description ?? ''),
-      position: String(v.position ?? ''),
-      address: String(v.address ?? ''),
-      address2: String(v.address2 ?? ''),
-      city: String(v.city ?? ''),
-      province: String(v.province ?? ''),
-      postalCode: String(v.postalCode ?? ''),
-      latitude: Number(v.latitude) || 0,
-      longitude: Number(v.longitude) || 0,
-      hourlyRate: Number(v.hourlyRate) || 0,
-      shifts: v.shifts.map((s: { date: string | Date; startTime: string; endTime: string }) => ({
-        date: this.toDateString(s.date),
-        startTime: this.toTimeHHmmss(s.startTime),
-        endTime: this.toTimeHHmmss(s.endTime)
+      Title: String(v.title ?? ''),
+      Description: String(v.description ?? ''),
+      Position: String(v.position ?? ''),
+      Address: String(v.address ?? ''),
+      Address2: String(v.address2 ?? ''),
+      City: String(v.city ?? ''),
+      Province: String(v.province ?? ''),
+      PostalCode: String(v.postalCode ?? ''),
+      Latitude: Number(v.latitude) || 0,
+      Longitude: Number(v.longitude) || 0,
+      HourlyRate: Number(v.hourlyRate) || 0,
+      Shifts: v.shifts.map((s: { date: string | Date; startTime: string; endTime: string }) => ({
+        Date: this.toDateString(s.date),
+        StartTime: this.toTimeHHmmss(s.startTime),
+        EndTime: this.toTimeHHmmss(s.endTime)
       }))
     };
     this.isSubmitting = true;
@@ -308,12 +312,16 @@ export class CareHomeHome implements OnInit, AfterViewInit {
           longitude: 0,
           hourlyRate: 0
         });
+        this.requestForm.markAsUntouched();
+        this.requestForm.markAsPristine();
         if (this.marker && this.map) {
           this.map.removeLayer(this.marker);
           this.marker = null;
         }
         while (this.shifts.length > 1) this.shifts.removeAt(1);
         this.shifts.at(0).reset({ date: '', startTime: '08:00', endTime: '16:00' });
+        this.shifts.at(0).markAsUntouched();
+        this.shifts.at(0).markAsPristine();
         this.isSubmitting = false;
         this.addressOrLocationError = false;
         this.cdr.markForCheck();

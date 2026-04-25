@@ -115,7 +115,7 @@
 <div class="shifts-list">
      <div *ngFor="let shift of (offer.shifts || [])" class="shift-chip" [class.shift-chip--booked]="!shift.isAvailable">
        <span class="shift-date">{{ shift.date | date:'d MMM' }}</span>
-       <span class="shift-time">{{ shift.startTime?.slice(0,5) }} - {{ shift.endTime?.slice(0,5) }}</span>
+       <span class="shift-time">{{ shift.startTime.slice(0,5) }} - {{ shift.endTime.slice(0,5) }}</span>
        <span class="shift-status-dot" [class.available]="shift.isAvailable" [class.booked]="!shift.isAvailable"></span>
      </div>
    </div>

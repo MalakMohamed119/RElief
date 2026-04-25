@@ -1,4 +1,4 @@
-import { Component, OnDestroy, NgZone } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotificationService, ToastMessage } from '../../../core/services/notification.service';
@@ -14,17 +14,10 @@ export class ToastComponent implements OnDestroy {
   toast: ToastMessage | null = null;
   private sub: Subscription;
 
-  constructor(private notifications: NotificationService, private zone: NgZone) {
+  constructor(private notifications: NotificationService) {
     this.sub = this.notifications.toast$.subscribe({
       next: (t) => {
-        // Run outside Angular zone to avoid change detection issues
-        this.zone.runOutsideAngular(() => {
-          setTimeout(() => {
-            this.zone.run(() => {
-              this.toast = t;
-            });
-          });
-        });
+        this.toast = t;
       }
     });
   }
@@ -37,4 +30,3 @@ export class ToastComponent implements OnDestroy {
     this.notifications.clear();
   }
 }
-

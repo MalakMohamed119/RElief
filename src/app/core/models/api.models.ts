@@ -83,27 +83,45 @@ export interface UpdateProfileDto {
   address?: any;
 }
 
+// ✅ PascalCase — مطابق لما السيرفر .NET بيتوقعه
 export interface CreateJobOfferDto {
-  title: string;
-  description: string;
-  position: string;
-  address: string;
-  address2: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  latitude: number;
-  longitude: number;
-  hourlyRate: number;
-  shifts: Array<{
-    startTime: string;
-    endTime: string;
-    date: string;
+  Title: string;
+  Description: string;
+  Position: string;
+  Address: string;
+  Address2: string;
+  City: string;
+  Province: string;
+  PostalCode: string;
+  Latitude?: number;
+  Longitude?: number;
+  HourlyRate?: number;
+  Shifts?: Array<{
+    Date: string;
+    StartTime: string;
+    EndTime: string;
   }>;
 }
 
-export interface UpdateJobOfferDto extends Partial<CreateJobOfferDto> {
+// ✅ PascalCase
+export interface UpdateJobOfferDto {
   id: string;
+  Title?: string;
+  Description?: string;
+  Position?: string;
+  Address?: string;
+  Address2?: string;
+  City?: string;
+  Province?: string;
+  PostalCode?: string;
+  Latitude?: number;
+  Longitude?: number;
+  HourlyRate?: number;
+  Shifts?: Array<{
+    Date: string;
+    StartTime: string;
+    EndTime: string;
+  }>;
 }
 
 export interface ApplyToOfferDto {
@@ -112,4 +130,3 @@ export interface ApplyToOfferDto {
   message?: string;
   shiftIds?: string[];
 }
-
