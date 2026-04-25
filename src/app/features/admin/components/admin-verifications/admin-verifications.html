@@ -71,7 +71,8 @@
     <div *ngFor="let v of verifications" class="verification-card">
       <div class="card-header">
         <div class="psw-avatar">
-          {{ getDisplayName(v).charAt(0).toUpperCase() }}
+          <img *ngIf="getProfilePhotoUrlForItem(v)" [src]="getProfilePhotoUrlForItem(v)" [alt]="'Photo of ' + getDisplayName(v)" class="profile-photo" (error)="$event.target.style.display='none'" />
+          <span *ngIf="!getProfilePhotoUrlForItem(v)">{{ getDisplayName(v).charAt(0).toUpperCase() }}</span>
         </div>
         <div class="psw-info">
           <h3>{{ getDisplayName(v) }}</h3>
@@ -139,11 +140,11 @@
     <div class="modal-content ver-profile-modal" (click)="$event.stopPropagation()">
 <div class="ver-profile-head">
   <div class="ver-profile-avatar">
-    <img *ngIf="getProfilePhotoUrl()" [src]="getProfilePhotoUrl()" [alt]="'Photo of ' + profileInitial" class="profile-photo" (error)="onPhotoError($event)" />
+    <img *ngIf="getProfilePhotoUrl()" [src]="getProfilePhotoUrl()" [alt]="'Photo of ' + profileInitial" class="profile-photo avatar-img" (error)="onPhotoError($event)" />
     <span *ngIf="!getProfilePhotoUrl()">{{ profileInitial }}</span>
   </div>
   <div class="ver-profile-titles">
-    <h2>{{ getDisplayNameFromId(profileUserId!) }}</h2>
+    <h2>{{ profileFullName }}</h2>
   </div>
   <button type="button" class="ver-profile-close" (click)="closeProfile()" aria-label="Close">×</button>
 </div>

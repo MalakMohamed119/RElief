@@ -24,17 +24,31 @@ export class CompleteProfileService {
 
   private buildFormData(payload: CompleteProfilePayload): FormData {
     const formData = new FormData();
-    formData.append('ProofIdentityType', payload.proofIdentityType);
-    formData.append('WorkStatus', String(payload.workStatus));
-    formData.append('ProofIdentityFile', payload.proofIdentityFile);
-    if (payload.proofIdentityFileBack) {
+    if (payload.proofIdentityType) {
+      formData.append('ProofIdentityType', payload.proofIdentityType);
+    }
+    if (payload.workStatus !== undefined) {
+      formData.append('WorkStatus', String(payload.workStatus));
+    }
+    if (payload.proofIdentityFile instanceof File) {
+      formData.append('ProofIdentityFile', payload.proofIdentityFile);
+    }
+    if (payload.proofIdentityFileBack instanceof File) {
       formData.append('ProofIdentityFileBack', payload.proofIdentityFileBack);
     }
-    formData.append('PswCertificateFile', payload.pswCertificateFile);
-    formData.append('CVFile', payload.cvFile);
-    formData.append('ImmunizationRecordFile', payload.immunizationRecordFile);
-    formData.append('CriminalRecordFile', payload.criminalRecordFile);
-    if (payload.firstAidOrCPRFile) {
+    if (payload.pswCertificateFile instanceof File) {
+      formData.append('PswCertificateFile', payload.pswCertificateFile);
+    }
+    if (payload.cvFile instanceof File) {
+      formData.append('CVFile', payload.cvFile);
+    }
+    if (payload.immunizationRecordFile instanceof File) {
+      formData.append('ImmunizationRecordFile', payload.immunizationRecordFile);
+    }
+    if (payload.criminalRecordFile instanceof File) {
+      formData.append('CriminalRecordFile', payload.criminalRecordFile);
+    }
+    if (payload.firstAidOrCPRFile instanceof File) {
       formData.append('FirstAidOrCPRFile', payload.firstAidOrCPRFile);
     }
     return formData;

@@ -169,6 +169,14 @@
   font-size: 1.5rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
 }
 
 .psw-info {
@@ -341,7 +349,8 @@
   overflow: hidden;
   position: relative;
 
-  img.profile-photo {
+  img.profile-photo,
+  img.avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;

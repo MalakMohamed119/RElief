@@ -1,7 +1,7 @@
-import { Component, DestroyRef, OnInit, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { Footer } from "../../../../shared/components/footer/footer";
 import { Navbar } from "../../../../shared/components/navbar/navbar";
@@ -9,7 +9,6 @@ import { OffersService } from '../../../../core/services/offers.service';
 import { CreateJobOfferDto } from '../../../../core/models/api.models';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { first } from 'rxjs/operators';
-import * as L from 'leaflet';
 
 // Material Modules
 import { MatIconModule } from '@angular/material/icon';
@@ -19,18 +18,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-
-function addressOrLocationValidator(): ValidatorFn {
-  return (group: AbstractControl): ValidationErrors | null => {
-    const g = group as FormGroup;
-    const address = (g.get('address')?.value ?? '').trim();
-    const lat = Number(g.get('latitude')?.value);
-    const lng = Number(g.get('longitude')?.value);
-    const hasAddress = address.length > 0;
-    const hasLocation = !Number.isNaN(lat) && !Number.isNaN(lng) && (lat !== 0 || lng !== 0);
-    return hasAddress || hasLocation ? null : { addressOrLocationRequired: true };
-  };
-}
 
 interface Service {
   icon: string;
@@ -66,16 +53,11 @@ interface Testimonial {
   templateUrl: './care-home-home.html',
   styleUrls: ['./care-home-home.scss'],
 })
-export class CareHomeHome implements OnInit, AfterViewInit {
+export class CareHomeHome implements OnInit {
   readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
   requestForm: FormGroup;
   isSubmitting = false;
-  map: L.Map | null = null;
-  marker: L.Marker | null = null;
-  mapReady = false;
-  addressOrLocationError = false;
   editingOfferId: string | null = null;
 
   constructor(
@@ -90,16 +72,14 @@ export class CareHomeHome implements OnInit, AfterViewInit {
       title: ['', [Validators.required]],
       description: ['', [Validators.required]],
       position: ['', [Validators.required]],
-      address: [''],
+      address: ['', [Validators.required]],
       address2: ['', [Validators.required]],
       city: ['', [Validators.required]],
       province: ['', [Validators.required]],
       postalCode: ['', [Validators.required]],
-      latitude: [0],
-      longitude: [0],
       hourlyRate: [0, [Validators.required, Validators.min(10)]],
       shifts: this.fb.array([this.createShiftGroup()])
-    }, { validators: addressOrLocationValidator() });
+    });
   }
 
   ngOnInit(): void {
@@ -118,52 +98,9 @@ export class CareHomeHome implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initMap();
-    }, 0);
-  }
-
   scrollToRequestForm(): void {
     const el = document.getElementById('request-form');
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  private initMap(): void {
-    if (!this.mapContainer?.nativeElement) return;
-    const defaultCenter: L.LatLngTuple = [30.0444, 31.2357]; // Cairo
-    this.map = L.map(this.mapContainer.nativeElement).setView(defaultCenter, 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(this.map);
-    this.map.on('click', (e: L.LeafletMouseEvent) => this.onMapClick(e.latlng));
-    this.mapReady = true;
-    // cdr.markForCheck(); - Angular handles automatically after setTimeout
-  }
-
-  private onMapClick(latlng: L.LatLng): void {
-    const lat = latlng.lat;
-    const lng = latlng.lng;
-    this.requestForm.patchValue({ latitude: lat, longitude: lng });
-    if (this.marker) this.marker.setLatLng(latlng);
-    else if (this.map) {
-      this.marker = L.marker(latlng).addTo(this.map);
-    }
-    this.reverseGeocode(lat, lng);
-    this.addressOrLocationError = false;
-    this.cdr.markForCheck();
-  }
-
-  private reverseGeocode(lat: number, lng: number): void {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
-    fetch(url, { headers: { 'Accept-Language': 'en' } })
-      .then(res => res.json())
-      .then((data: { display_name?: string }) => {
-        const addr = data?.display_name ?? '';
-        if (addr) this.requestForm.patchValue({ address: addr });
-        this.cdr.markForCheck();
-      })
-      .catch(() => this.cdr.markForCheck());
   }
 
   private loadOfferForEdit(offerId: string): void {
@@ -180,8 +117,6 @@ export class CareHomeHome implements OnInit, AfterViewInit {
           city: offer.city ?? offer.City ?? '',
           province: offer.province ?? offer.Province ?? '',
           postalCode: offer.postalCode ?? offer.PostalCode ?? '',
-          latitude: offer.latitude ?? offer.Latitude ?? 0,
-          longitude: offer.longitude ?? offer.Longitude ?? 0,
           hourlyRate: offer.hourlyRate ?? offer.HourlyRate ?? 0,
         });
 
@@ -200,19 +135,6 @@ export class CareHomeHome implements OnInit, AfterViewInit {
           }
         }
 
-        const lat = this.requestForm.get('latitude')?.value;
-        const lng = this.requestForm.get('longitude')?.value;
-        if (this.map && lat && lng && !Number.isNaN(lat) && !Number.isNaN(lng)) {
-          const latlng = L.latLng(lat, lng);
-          if (this.marker) {
-            this.marker.setLatLng(latlng);
-          } else {
-            this.marker = L.marker(latlng).addTo(this.map);
-          }
-          this.map.setView(latlng, 13);
-        }
-
-        this.addressOrLocationError = false;
         this.cdr.markForCheck();
       },
       error: () => {
@@ -264,7 +186,6 @@ export class CareHomeHome implements OnInit, AfterViewInit {
   }
 
   submitRequest(): void {
-    this.addressOrLocationError = this.requestForm.hasError('addressOrLocationRequired');
     if (this.requestForm.invalid) {
       this.requestForm.markAllAsTouched();
       this.cdr.markForCheck();
@@ -280,8 +201,8 @@ export class CareHomeHome implements OnInit, AfterViewInit {
       City: String(v.city ?? ''),
       Province: String(v.province ?? ''),
       PostalCode: String(v.postalCode ?? ''),
-      Latitude: Number(v.latitude) || 0,
-      Longitude: Number(v.longitude) || 0,
+      Latitude: 0,
+      Longitude: 0,
       HourlyRate: Number(v.hourlyRate) || 0,
       Shifts: v.shifts.map((s: { date: string | Date; startTime: string; endTime: string }) => ({
         Date: this.toDateString(s.date),
@@ -308,22 +229,15 @@ export class CareHomeHome implements OnInit, AfterViewInit {
           city: '',
           province: '',
           postalCode: '',
-          latitude: 0,
-          longitude: 0,
           hourlyRate: 0
         });
         this.requestForm.markAsUntouched();
         this.requestForm.markAsPristine();
-        if (this.marker && this.map) {
-          this.map.removeLayer(this.marker);
-          this.marker = null;
-        }
         while (this.shifts.length > 1) this.shifts.removeAt(1);
         this.shifts.at(0).reset({ date: '', startTime: '08:00', endTime: '16:00' });
         this.shifts.at(0).markAsUntouched();
         this.shifts.at(0).markAsPristine();
         this.isSubmitting = false;
-        this.addressOrLocationError = false;
         this.cdr.markForCheck();
       },
       error: (err) => {

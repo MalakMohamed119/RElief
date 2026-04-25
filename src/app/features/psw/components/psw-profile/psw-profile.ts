@@ -306,9 +306,29 @@ export class PswProfile implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.profile.profileImage = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+
     this.profileService.uploadPhoto(file).subscribe({
-      next: () => { this.notifications.show('Photo updated.', 'success'); this.loadProfile(); },
-      error: () => { this.notifications.show('Failed to upload photo.', 'error'); }
+      next: (res: any) => {
+        this.notifications.show('Photo updated.', 'success');
+        if (res?.url) {
+          this.profile.profileImage = res.url;
+          this.cdr.detectChanges();
+        }
+        // Do NOT call this.loadProfile() here
+      },
+      error: () => {
+        this.notifications.show('Failed to upload photo.', 'error');
+        // Revert preview on error
+        this.profile.profileImage = null;
+        this.cdr.detectChanges();
+      }
     });
   }
 

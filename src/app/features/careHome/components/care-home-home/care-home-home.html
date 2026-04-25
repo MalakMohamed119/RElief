@@ -61,35 +61,40 @@
 <section id="request-form" class="request-form">
   <div class="container">
     <h2>Create Request (Job Offer)</h2>
-    <div class="form-and-map-row">
+    <div class="form-row">
       <div class="form-col">
         <form [formGroup]="requestForm" (ngSubmit)="submitRequest()">
           <div class="form-group">
-            <label for="title">Title</label>
+            <label for="title">Title <span class="required">*</span></label>
             <div class="input-wrapper">
               <i class="fas fa-heading"></i>
               <input type="text" id="title" formControlName="title" placeholder="Offer title">
             </div>
+            @if (requestForm.get('title')?.invalid && requestForm.get('title')?.touched) {
+              <div class="error-message">Title is required.</div>
+            }
           </div>
           <div class="form-group">
-            <label for="description">Description</label>
+            <label for="description">Description <span class="required">*</span></label>
             <div class="input-wrapper">
               <i class="fas fa-align-left"></i>
               <textarea id="description" formControlName="description" placeholder="Describe the role or requirements" rows="3"></textarea>
             </div>
+            @if (requestForm.get('description')?.invalid && requestForm.get('description')?.touched) {
+              <div class="error-message">Description is required.</div>
+            }
           </div>
           <div class="form-group">
-            <label for="address">Address <span class="optional-label">(optional – type here or pick on map)</span></label>
+            <label for="address">Address <span class="required">*</span></label>
             <div class="input-wrapper">
               <i class="fas fa-map-marker-alt"></i>
-              <input type="text" id="address" formControlName="address" placeholder="Type address or click on the map">
+              <input type="text" id="address" formControlName="address" placeholder="Enter street address">
             </div>
-            @if (addressOrLocationError) {
-              <div class="error-message">Enter an address or pick a location on the map.</div>
+            @if (requestForm.get('address')?.invalid && requestForm.get('address')?.touched) {
+              <div class="error-message">Address is required.</div>
             }
           </div>
           
-          <!-- New Required Address Details and Position -->
           <div class="form-group">
             <label for="position">Job Position <span class="required">*</span></label>
             <div class="input-wrapper">
@@ -146,7 +151,7 @@
           </div>
           
           <div class="form-group">
-            <label for="hourlyRate">Hourly Rate</label>
+            <label for="hourlyRate">Hourly Rate <span class="required">*</span></label>
             <div class="input-wrapper">
               <i class="fas fa-coins"></i>
               <input type="number" id="hourlyRate" formControlName="hourlyRate" placeholder="Enter rate (min 10)" min="10" step="0.01">
@@ -154,11 +159,14 @@
             @if (requestForm.get('hourlyRate')?.errors?.['min'] && requestForm.get('hourlyRate')?.touched) {
               <div class="error-message">Hourly rate must be at least 10.</div>
             }
+            @if (requestForm.get('hourlyRate')?.errors?.['required'] && requestForm.get('hourlyRate')?.touched) {
+              <div class="error-message">Hourly rate is required.</div>
+            }
           </div>
 
           <div class="shifts-section">
             <div class="shifts-header">
-              <label>Shifts</label>
+              <label>Shifts <span class="required">*</span></label>
               <button type="button" class="add-shift-btn" (click)="addShift()">
                 <i class="fas fa-plus"></i> Add shift
               </button>
@@ -194,13 +202,6 @@
             <i class="fas fa-paper-plane"></i> {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}
           </button>
         </form>
-      </div>
-      <div class="map-col">
-        <div class="map-label">Pick location on map</div>
-        <div #mapContainer class="map-container"></div>
-        @if (!mapReady) {
-          <div class="map-loading">Loading map…</div>
-        }
       </div>
     </div>
   </div>

@@ -41,6 +41,7 @@ interface VerificationItem {
   immunizationRecordFileId: string;
   criminalRecordFileId: string;
   firstAidOrCPRFileId: string;
+  profilePhoto?: any;
 }
 
 @Component({
@@ -198,7 +199,35 @@ rejectReason = '';
     this.profileUserId = pswUserId;
     this.profileDetail = null;
     this.profileLoading = true;
-    this.loadProfileDocuments();
+
+    // Fetch full profile to get profilePhoto.url (not available in verifications endpoint)
+    this.admin.getAdminUserProfile(pswUserId).subscribe({
+      next: (response: any) => {
+        // API returns { success: true, data: { ... } } — unwrap it
+        const data = response?.data ?? response;
+
+        const verificationItem = this.allVerifications.find(v => v.pswUserId === pswUserId);
+        this.profileDetail = {
+          ...(verificationItem as any),
+          ...data,
+        };
+        this.loadProfileDocuments();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // Fallback: use verification item only (no photo)
+        const verificationItem = this.allVerifications.find(v => v.pswUserId === pswUserId);
+        if (verificationItem) {
+          this.profileDetail = verificationItem as any;
+          this.loadProfileDocuments();
+        } else {
+          this.profileLoading = false;
+          this.profileUserId = null;
+          this.notifications.show('Failed to load profile.', 'error');
+        }
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   loadProfileDocuments(): void {
@@ -211,7 +240,6 @@ rejectReason = '';
       return;
     }
 
-    this.profileDetail = verificationItem as any;
     this.documentFiles = this.docConfig.map(cfg => ({
       name: cfg.name,
       icon: cfg.icon,
@@ -290,14 +318,43 @@ rejectReason = '';
     const p = this.profileDetail;
     if (!p) return '?';
     const first = p['firstName'] ?? p['FirstName'];
+    const last = p['lastName'] ?? p['LastName'];
+    if (first && last) {
+      return (String(first)[0] + String(last)[0]).toUpperCase();
+    }
     const email = p['email'] ?? p['Email'];
-    const s = String(first || email || '?').trim();
+    const full = p['fullName'] ?? p['FullName'];
+    const s = String(first || full || email || '?').trim();
     return s ? s.charAt(0).toUpperCase() : '?';
   }
 
+  get profileFullName(): string {
+    const p = this.profileDetail;
+    if (!p) return 'N/A';
+    const first = p['firstName'] ?? p['FirstName'];
+    const last = p['lastName'] ?? p['LastName'];
+    if (first && last) {
+      return `${first} ${last}`.trim();
+    }
+    return String(p['fullName'] ?? p['FullName'] ?? 'N/A');
+  }
+
   getProfilePhotoUrl(): string | null {
-    const photo = this.profileDetail?.['profilePhoto'] as any;
-    return photo?.url || null;
+    const p = this.profileDetail;
+    if (!p) return null;
+
+    // From full profile API: profilePhoto.url
+    const photo = p['profilePhoto'] as any;
+    if (photo?.url) return photo.url;
+
+    // From profile upload-photo response
+    if (typeof photo === 'string' && photo.trim()) return photo.trim();
+
+    // Direct string field
+    const img = p['profileImage'] as any;
+    if (typeof img === 'string' && img.trim()) return img.trim();
+
+    return null;
   }
 
   onPhotoError(event: Event): void {
@@ -361,6 +418,11 @@ rejectReason = '';
   cancelReject(): void {
     this.rejectPswId = null;
     this.rejectReason = '';
+  }
+
+  getProfilePhotoUrlForItem(v: VerificationItem): string | null {
+    const photo = v?.profilePhoto as any;
+    return photo?.url || null;
   }
 
   getDisplayName(v: VerificationItem): string {
