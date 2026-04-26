@@ -90,6 +90,16 @@ rejectReason = '';
   pageIndex = 0;
   pageSize = 12;
 
+  lightboxUrl: string | null = null;
+
+  openLightbox(url: string | null): void {
+    if (url) this.lightboxUrl = url;
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl = null;
+  }
+
   ngOnInit(): void {
     this.load();
   }
@@ -116,6 +126,22 @@ rejectReason = '';
     );
   }
 
+  private loadPhotosForVerifications(): void {
+    this.allVerifications.forEach(v => {
+      if (v.profilePhoto) return; // already loaded
+      this.admin.getAdminUserProfile(v.pswUserId).subscribe({
+        next: (response: any) => {
+          const data = response?.data ?? response;
+          if (data?.profilePhoto?.url) {
+            v.profilePhoto = data.profilePhoto;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => {} // silent fail
+      });
+    });
+  }
+
   load(): void {
     this.isLoading = true;
     this.error = null;
@@ -133,6 +159,9 @@ rejectReason = '';
         this.isLoading = false;
         this.applyLocalPage();
         this.cdr.detectChanges();
+
+        // Load profile photos for all verification cards
+        this.loadPhotosForVerifications();
       },
       error: (err) => {
         console.error('Error loading verifications:', err);

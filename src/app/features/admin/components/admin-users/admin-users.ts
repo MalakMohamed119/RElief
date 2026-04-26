@@ -68,6 +68,16 @@ export class AdminUsers implements OnInit {
   profileLoading = false;
 profileDetail: Record<string, unknown> | null = null;
 
+  lightboxUrl: string | null = null;
+
+  openLightbox(url: string | null): void {
+    if (url) this.lightboxUrl = url;
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl = null;
+  }
+
   get formattedDob(): string {
     const dobRaw = this.profileDetail?.['dateOfBirth'];
     if (!dobRaw) return 'N/A';

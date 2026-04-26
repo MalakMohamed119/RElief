@@ -13,16 +13,18 @@ import {
 
 interface ApplicationItem {
   jobRequestId: string;
+  pswId?: string;
   pswUserId?: string;
   offerId: string;
   pswName: string;
+  pswFullName?: string;
   pswEmail?: string;
   pswPhone?: string;
   pswVerification?: string;
   pswPhotoUrl?: string;
   hourlyRate?: number;
   offerTitle: string;
-  careHomeName: string;
+  careHomeName?: string;
   shiftDate?: string;
   startTime?: string;
   endTime?: string;
@@ -63,6 +65,8 @@ export class AdminApplications implements OnInit {
   statusFilter: '' | 'Pending' | 'Accepted' | 'Rejected' | 'Cancelled' = 'Pending';
   pageIndex = 0;
   pageSize = 12;
+
+  lightboxUrl: string | null = null;
 
   ngOnInit(): void {
     this.load();
@@ -115,6 +119,14 @@ export class AdminApplications implements OnInit {
         this.isLoading = false;
         this.applyLocalPage();
         this.cdr.detectChanges();
+
+        // Eagerly load PSW profile details (photo, phone, verification) for all items
+        this.allApplications.forEach(app => {
+          const userId = app.pswId ?? app.pswUserId;
+          if (userId && !app.profileLoaded) {
+            this.loadPswDetails(app);
+          }
+        });
       },
       error: (err) => {
         console.error('Error loading applications:', err);
@@ -276,40 +288,43 @@ export class AdminApplications implements OnInit {
   }
 
   getPswName(app: ApplicationItem): string {
-    return app.pswName || (app as any).pswFullName || (app as any).psw?.pswFullName || (app as any).psw?.fullName || 'N/A';
+    return app.pswFullName || app.pswName || (app as any).psw?.fullName || 'N/A';
   }
 
 
 
 
   getPswPhone(app: ApplicationItem): string {
-    if (!app.profileLoaded && app.pswUserId) {
+    const userId = app.pswId ?? app.pswUserId;
+    if (!app.profileLoaded && userId) {
       this.loadPswDetails(app);
     }
     return app.pswPhone || 'N/A';
   }
 
   getVerificationStatus(app: ApplicationItem): string {
-    if (!app.profileLoaded && app.pswUserId) {
+    const userId = app.pswId ?? app.pswUserId;
+    if (!app.profileLoaded && userId) {
       this.loadPswDetails(app);
     }
     return app.pswVerification || 'N/A';
   }
 
   private loadPswDetails(app: ApplicationItem): void {
-    if (!app.pswUserId || app.profileLoaded) return;
+    const userId = app.pswId ?? app.pswUserId;
+    if (!userId || app.profileLoaded) return;
+    app.profileLoaded = true; // prevent duplicate calls
 
-    this.profileService.getProfileById(app.pswUserId).subscribe({
-      next: (profile) => {
-        app.pswPhone = profile.phoneNumber;
-        app.pswVerification = profile.verificationStatus;
-        app.pswPhotoUrl = profile.profilePhoto?.url;
-        app.profileLoaded = true;
+    this.admin.getAdminUserProfile(userId).subscribe({
+      next: (response: any) => {
+        const data = response?.data ?? response;
+        app.pswPhone = app.pswPhone || data?.phoneNumber || 'N/A';
+        app.pswVerification = data?.verificationStatus || 'N/A';
+        app.pswPhotoUrl = data?.profilePhoto?.url || null;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.warn('Failed to load PSW profile details:', err);
-        app.profileLoaded = true; // Prevent retries
       }
     });
   }
@@ -319,14 +334,14 @@ export class AdminApplications implements OnInit {
   }
 
   getShiftInfo(app: ApplicationItem): string {
-    if (app.shiftDate) {
-      const dateStr = new Date(app.shiftDate).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+    const shifts = (app as any).shifts as any[];
+    if (shifts?.length) {
+      const s = shifts[0];
+      const dateStr = new Date(s.date).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
       });
-      if (app.startTime && app.endTime) {
-        return `${dateStr} • ${app.startTime} - ${app.endTime}`;
+      if (s.startTime && s.endTime) {
+        return `${dateStr} • ${s.startTime.slice(0,5)} - ${s.endTime.slice(0,5)}`;
       }
       return dateStr;
     }
@@ -352,6 +367,14 @@ export class AdminApplications implements OnInit {
 
   get hasAnyLoaded(): boolean {
     return this.allApplications.length > 0;
+  }
+
+  openLightbox(url: string | null | undefined): void {
+    if (url) this.lightboxUrl = url;
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl = null;
   }
 }
 

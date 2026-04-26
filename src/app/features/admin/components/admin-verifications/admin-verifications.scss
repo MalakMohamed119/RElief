@@ -158,10 +158,10 @@
 }
 
 .psw-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  width: 52px;
+  height: 52px;
+  border-radius: 20%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -170,12 +170,13 @@
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
   overflow: hidden;
+  flex-shrink: 0;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: inherit;
+    border-radius: 20%;
   }
 }
 

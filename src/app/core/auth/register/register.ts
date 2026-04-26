@@ -83,6 +83,37 @@ export class RegisterComponent implements OnInit {
       : false;
   }
 
+  /**
+   * Returns a human-readable summary of all form validation errors for debugging.
+   * Called automatically when submission is blocked by invalid form.
+   */
+  getFormValidationErrors(): string[] {
+    const errors: string[] = [];
+    const controls = this.registerForm.controls;
+
+    Object.keys(controls).forEach((key) => {
+      const control = controls[key];
+      if (control instanceof FormGroup) {
+        Object.keys(control.controls).forEach((subKey) => {
+          const subControl = control.controls[subKey];
+          if (subControl.invalid && (subControl.dirty || subControl.touched)) {
+            const errKeys = Object.keys(subControl.errors || {});
+            errors.push(`Address ${subKey}: ${errKeys.join(', ')}`);
+          }
+        });
+      } else if (control.invalid && (control.dirty || control.touched)) {
+        const errKeys = Object.keys(control.errors || {});
+        errors.push(`${key}: ${errKeys.join(', ')}`);
+      }
+    });
+
+    if (this.registerForm.hasError('mismatch')) {
+      errors.push('confirmPassword: mismatch');
+    }
+
+    return errors;
+  }
+
   switchMode(mode: 'psw' | 'carehome-individual' | 'carehome-multiple'): void {
     if (this.currentMode === mode) return;
     this.currentMode = mode;
@@ -119,6 +150,13 @@ export class RegisterComponent implements OnInit {
     
     if (this.registerForm.invalid || !this.currentMode) {
       this.registerForm.markAllAsTouched();
+      const errors = this.getFormValidationErrors();
+      console.error('Form validation errors:', errors);
+      if (errors.length > 0) {
+        this.notification.show(`Please fix the following: ${errors.join('; ')}`, 'error', 6000);
+      } else {
+        this.notification.show('Please fill in all required fields correctly.', 'error', 4000);
+      }
       return;
     }
 
@@ -160,7 +198,9 @@ export class RegisterComponent implements OnInit {
             this.notification.show('Registration successful! Redirecting...', 'success', 3000);
             setTimeout(() => this.router.navigate(['/login']), 2000);
           } else {
-            this.router.navigate(['/carehome/complete-profile']);
+            // Carehome accounts go straight to their dashboard after registration
+            this.notification.show('Registration successful! Redirecting...', 'success', 3000);
+            setTimeout(() => this.router.navigate(['/care-home']), 2000);
           }
         } else {
           this.notification.show('Registration successful! Please login.', 'success', 3000);
@@ -175,9 +215,18 @@ export class RegisterComponent implements OnInit {
           message = `Email already registered. Please login.`;
           setTimeout(() => this.router.navigate(['/login']), 2000);
         } else if (err.status === 400) {
-          message = err.error?.message || message;
+          // Show server validation errors if available
+          if (err.error?.errors && Array.isArray(err.error.errors)) {
+            message = err.error.errors.join('; ');
+          } else {
+            message = err.error?.message || err.error?.title || message;
+          }
+        } else if (err.status === 0) {
+          message = 'Cannot connect to server. Please check your internet connection.';
+        } else if (err.status >= 500) {
+          message = 'Server error. Please try again later.';
         }
-        this.notification.show(message, 'error', 5000);
+        this.notification.show(message, 'error', 6000);
         this.isLoading = false;
       }
     });

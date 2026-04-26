@@ -69,6 +69,16 @@ export class PswProfile implements OnInit, OnDestroy {
   rejectionReason: string | null = null;
   hasFiles = false;
 
+  lightboxUrl: string | null = null;
+
+  openLightbox(url: string | null): void {
+    if (url) this.lightboxUrl = url;
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl = null;
+  }
+
   editModel = {
     firstName: '',
     lastName: '',

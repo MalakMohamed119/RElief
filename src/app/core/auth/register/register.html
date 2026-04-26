@@ -117,10 +117,13 @@
         <input 
           type="tel" 
           formControlName="phoneNumber"
-          [class.is-invalid]="hasError('phoneNumber', 'required')"
+          [class.is-invalid]="hasError('phoneNumber', 'required') || hasError('phoneNumber', 'pattern')"
           placeholder="+1 (555) 123-4567">
         @if (hasError('phoneNumber', 'required')) {
           <div class="error-message">Phone number is required</div>
+        }
+        @if (hasError('phoneNumber', 'pattern')) {
+          <div class="error-message">Phone number must be at least 10 digits</div>
         }
       </div>
 
@@ -263,7 +266,7 @@
           <input 
             [type]="showPassword ? 'text' : 'password'" 
             formControlName="password"
-            [class.is-invalid]="hasError('password', 'required')"
+            [class.is-invalid]="hasError('password', 'required') || hasError('password', 'minlength') || hasError('password', 'pattern')"
             placeholder="Create a password at least 8 characters">
           <button type="button" class="toggle-password" (click)="togglePasswordVisibility('password')">
             <i [class]="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
@@ -271,6 +274,9 @@
         </div>
         @if (hasError('password', 'minlength')) {
           <div class="error-message">Password must be at least 8 characters</div>
+        }
+        @if (hasError('password', 'pattern')) {
+          <div class="error-message">Password needs uppercase, lowercase, number and special character</div>
         }
       </div>
 
@@ -292,11 +298,11 @@
         }
       </div>
 
-      <!-- SUBMIT BUTTON -->
+
       <button 
         type="submit" 
         class="sign-in-btn" 
-        [disabled]="isLoading || registerForm.invalid">
+        [disabled]="isLoading">
         {{ !isLoading ? (currentMode === 'psw' ? 'Create PSW Account' : 
                         currentMode === 'carehome-individual' ? 'Create Care Home Account' : 
                         'Create Multiple Homes Account') : 'Creating Account...' }}

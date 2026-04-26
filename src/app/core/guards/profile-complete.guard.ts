@@ -36,7 +36,13 @@ export const profileCompleteGuard: CanActivateFn = () => {
     console.log('- Storage profile complete:', profileCompleteFromStorage);
     console.log('- Verification status:', verificationStatus);
     
-    const isProfileComplete = serverProfile?.isProfileCompleted === true || verificationStatus === 'Approved';
+    // Allow access if: profile is completed OR verification is Pending/Approved
+    const isProfileComplete = 
+      serverProfile?.isProfileCompleted === true || 
+      verificationStatus === 'Approved' ||
+      verificationStatus === 'Pending' ||
+      verificationStatus === 'pending';
+
     const needsCompleteProfile = !isProfileComplete;
     
     console.log('- Server profile complete:', serverProfile?.isProfileCompleted);

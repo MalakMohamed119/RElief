@@ -71,7 +71,10 @@ previews: { [key: string]: string } = {}; // للمعاينة الفورية
       const shouldBlock = isAuthenticated && 
                          !needsFreshReg && 
                          profileComplete && 
-                         verificationStatus === 'approved';
+                         (verificationStatus === 'approved' || 
+                          verificationStatus === 'Approved' ||
+                          verificationStatus === 'pending' ||
+                          verificationStatus === 'Pending');
       
       if (shouldBlock) {
         console.log('🚫 BLOCKED: Profile already approved & complete → PSW dashboard');

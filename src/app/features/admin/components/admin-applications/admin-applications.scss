@@ -185,6 +185,8 @@
       &.psw-avatar {
         background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        border-radius: 50%;
+        overflow: hidden;
       }
     }
 
