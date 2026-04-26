@@ -99,8 +99,11 @@ export class AdminService {
     return this.http.get<any>(`${this.apiUrl}/api/admin/offers`);
   }
 
-  getAdminOffersPaged(): Observable<AdminPagedResult> {
-    return this.http.get<any>(`${this.apiUrl}/api/admin/offers`).pipe(
+  getAdminOffersPaged(pageIndex: number = 1, pageSize: number = 100): Observable<AdminPagedResult> {
+    const params = new HttpParams()
+      .set('pageIndex', String(pageIndex))
+      .set('pageSize', String(pageSize));
+    return this.http.get<any>(`${this.apiUrl}/api/admin/offers`, { params }).pipe(
       map(extractAdminPagedResult)
     );
   }

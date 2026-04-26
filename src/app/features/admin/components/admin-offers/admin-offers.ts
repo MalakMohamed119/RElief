@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AdminService } from '../../../../core/services/admin.service';
+import { AdminService, AdminPagedResult } from '../../../../core/services/admin.service';
 import { OffersService } from '../../../../core/services/offers.service';
 import {
   clientFilterSearch,
@@ -93,17 +93,14 @@ export class AdminOffers implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.admin.getAdminOffersPaged().subscribe({
-      next: (response: any) => {
-        console.log('API Response:', response);
-        const extractedItems = response.items || response.data || (Array.isArray(response) ? response : []);
-        this.allOffers = Array.isArray(extractedItems) ? extractedItems.map(item => ({
+    this.admin.getAdminOffersPaged(1, 1000).subscribe({
+      next: (result: AdminPagedResult) => {
+        this.allOffers = (result.items as any[]).map(item => ({
           ...item,
-          posterName: item.careHomeName || item.posterName,
-          posterType: 'Care Home',
+          posterName: item.posterName || item.careHomeName,
+          posterType: item.posterType || 'Care Home',
           position: item.position || item.jobTitle,
-        })) : [];
-        console.log('Normalized offers:', this.allOffers[0]);
+        }));
         this.isLoading = false;
         this.applyLocalPage();
         this.cdr.detectChanges();
@@ -152,9 +149,8 @@ export class AdminOffers implements OnInit {
     }
   }
 
-  onPageSizeChange(event: any): void {
-    const size = +event.target.value;
-    this.pageSize = size;
+  onPageSizeChange(value: any): void {
+    this.pageSize = +value;
     this.pageIndex = 0;
     this.applyLocalPage();
     this.cdr.detectChanges();
