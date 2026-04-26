@@ -732,3 +732,26 @@ $radius-xl: 24px;
   }
 }
 
+.rejection-notice {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  i { font-size: 0.75rem; }
+}
+
+.mono-text {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+.rejected-by-text {
+  color: #dc2626;
+  font-weight: 600;
+}
+

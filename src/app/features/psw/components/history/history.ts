@@ -33,11 +33,17 @@ class PswApplicationPresenter {
     }
   }
 
+  get rejectedBy(): string | null {
+    if (this.app.status === 'RejectedByAdmin') return 'Admin';
+    if (this.app.status === 'RejectedByCareHome') return 'Care Home';
+    return null;
+  }
+
   get statusDisplay(): string {
     switch (this.app.status) {
       case 'Accepted':            return 'Accepted';
-      case 'RejectedByAdmin':
-      case 'RejectedByCareHome':  return 'Rejected';
+      case 'RejectedByAdmin':     return 'Rejected by Admin';
+      case 'RejectedByCareHome':  return 'Rejected by Care Home';
       case 'Canceled':            return 'Cancelled';
       default:                    return 'Pending';
     }
