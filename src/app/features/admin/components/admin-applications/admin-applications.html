@@ -64,28 +64,44 @@
           <span class="info-value">{{ getOfferTitle(app) }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">🏠 Care Home</span>
-          <span class="info-value">{{ getCareHomeName(app) }}</span>
+          <span class="info-label">👤 Care Home</span>
+          <span class="info-value">{{ getPosterName(app) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">📅 Shift</span>
           <span class="info-value">{{ getShiftInfo(app) }}</span>
         </div>
+
+        <div *ngIf="getExtraShifts(app).length > 0">
+          <div *ngFor="let s of getExtraShifts(app)" class="info-row">
+            <span class="info-label"></span>
+            <span class="info-value">{{ s }}</span>
+          </div>
+        </div>
+
         <div class="info-row">
           <span class="info-label">⏱ Applied</span>
           <span class="info-value">{{ getSubmittedDate(app) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">📧 Email</span>
-          <span class="info-value">{{ app.pswEmail }}</span>
+          <span class="info-value">{{ app.pswEmail || '—' }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">💰 Hourly Rate</span>
-          <span class="info-value rate-value">{{ app.hourlyRate ? '$' + app.hourlyRate + '/hr' : 'N/A' }}</span>
+          <span class="info-value rate-value">{{ app.hourlyRate ? '$' + app.hourlyRate + '/hr' : '—' }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">📞 Phone</span>
           <span class="info-value">{{ getPswPhone(app) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">✅ Verification</span>
+          <span class="info-value">
+            <span class="status-badge" [ngClass]="getVerificationStatus(app).toLowerCase()">
+              {{ getVerificationStatus(app) }}
+            </span>
+          </span>
         </div>
 
         <div class="card-actions-grid" *ngIf="displayStatus(app) === 'Pending'">
@@ -119,8 +135,8 @@
       </div>
       <div class="modal-body">
         <p>Please enter a reason for rejecting this application:</p>
-        <textarea 
-          [(ngModel)]="rejectReason" 
+        <textarea
+          [(ngModel)]="rejectReason"
           placeholder="Enter rejection reason..."
           rows="4"
           class="reject-reason-input">
@@ -128,9 +144,9 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" (click)="cancelReject()">Cancel</button>
-        <button 
-          class="btn-reject" 
-          (click)="submitReject()" 
+        <button
+          class="btn-reject"
+          (click)="submitReject()"
           [disabled]="!rejectReason.trim() || rejectingId">
           <i class="fa-solid fa-xmark" *ngIf="!rejectingId"></i>
           <i class="fa-solid fa-spinner fa-spin" *ngIf="rejectingId"></i>

@@ -24,7 +24,7 @@ interface ApplicationItem {
   pswPhotoUrl?: string;
   hourlyRate?: number;
   offerTitle: string;
-  careHomeName?: string;
+  posterName?: string;
   shiftDate?: string;
   startTime?: string;
   endTime?: string;
@@ -83,30 +83,24 @@ export class AdminApplications implements OnInit {
   private get filteredAll(): ApplicationItem[] {
     let list = this.allApplications;
 
-    console.log('Status filter:', this.statusFilter);
     if (this.statusFilter) {
       const want = this.statusFilter.toLowerCase();
-      list = list.filter((a) => {
-        const status = normStatus(a);
-        console.log('App status:', status, 'want:', want, 'match:', status.toLowerCase() === want);
-        return status.toLowerCase() === want;
-      });
+      list = list.filter((a) => normStatus(a).toLowerCase() === want);
     }
-
-    console.log('Final filtered list length:', list.length);
 
     return clientFilterSearch(list, this.searchInput, (a) =>
       [
         a.pswName,
+        a.pswFullName || '',
         a.pswPhone || '',
         a.pswEmail || '',
+        a.posterName || '',
         a.jobRequestId,
       ]
         .filter(Boolean)
         .join(' ')
     );
   }
-
 
   load(): void {
     this.isLoading = true;
@@ -120,7 +114,6 @@ export class AdminApplications implements OnInit {
         this.applyLocalPage();
         this.cdr.detectChanges();
 
-        // Eagerly load PSW profile details (photo, phone, verification) for all items
         this.allApplications.forEach(app => {
           const userId = app.pswId ?? app.pswUserId;
           if (userId && !app.profileLoaded) {
@@ -232,12 +225,6 @@ export class AdminApplications implements OnInit {
   }
 
   submitReject(): void {
-    console.log('submitReject called with:', {
-      selectedRequestId: this.selectedRequestId,
-      rejectReason: this.rejectReason,
-      currentRejectingId: this.rejectingId
-    });
-
     if (!this.selectedRequestId || !this.rejectReason.trim()) {
       this.notifications.show('Please enter a rejection reason.', 'error');
       return;
@@ -249,30 +236,21 @@ export class AdminApplications implements OnInit {
     }
 
     this.rejectingId = this.selectedRequestId;
-    console.log('Set rejectingId to:', this.rejectingId);
 
     this.admin.rejectApplication(this.selectedRequestId, { reason: this.rejectReason.trim() }).subscribe({
       next: () => {
-        console.log('Reject request successful');
         this.notifications.show('Application rejected successfully.', 'success');
         this.allApplications = this.allApplications.filter((a) => a.jobRequestId !== this.selectedRequestId);
         this.selectedRequestId = null;
         this.rejectReason = '';
-        this.rejectingId = null; // Clear rejecting state
-        console.log('Cleared rejectingId after success');
+        this.rejectingId = null;
         this.applyLocalPage();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.log('Reject request failed:', err);
         this.notifications.show(err?.error?.message || `Reject failed (Status:${err.status || 'unknown'})`, 'error');
-        this.rejectingId = null; // Clear rejecting state on error
-        console.log('Cleared rejectingId after error');
+        this.rejectingId = null;
         this.cdr.detectChanges();
-      },
-      complete: () => {
-        console.log('Reject request completed');
-        // rejectingId is already cleared in next/error handlers
       },
     });
   }
@@ -280,26 +258,23 @@ export class AdminApplications implements OnInit {
   cancelReject(): void {
     this.selectedRequestId = null;
     this.rejectReason = '';
-    this.rejectingId = null; // Clear rejecting state when canceling
-  }
-
-  getOfferTitle(app: ApplicationItem): string {
-    return app.offerTitle || 'N/A';
+    this.rejectingId = null;
   }
 
   getPswName(app: ApplicationItem): string {
-    return app.pswFullName || app.pswName || (app as any).psw?.fullName || 'N/A';
+    return app.pswFullName || app.pswName || (app as any).psw?.fullName || '—';
   }
 
-
-
+  getPosterName(app: ApplicationItem): string {
+    return app.posterName || (app as any).posterName || '—';
+  }
 
   getPswPhone(app: ApplicationItem): string {
     const userId = app.pswId ?? app.pswUserId;
     if (!app.profileLoaded && userId) {
       this.loadPswDetails(app);
     }
-    return app.pswPhone || 'N/A';
+    return app.pswPhone || '—';
   }
 
   getVerificationStatus(app: ApplicationItem): string {
@@ -307,19 +282,19 @@ export class AdminApplications implements OnInit {
     if (!app.profileLoaded && userId) {
       this.loadPswDetails(app);
     }
-    return app.pswVerification || 'N/A';
+    return app.pswVerification || '—';
   }
 
   private loadPswDetails(app: ApplicationItem): void {
     const userId = app.pswId ?? app.pswUserId;
     if (!userId || app.profileLoaded) return;
-    app.profileLoaded = true; // prevent duplicate calls
+    app.profileLoaded = true;
 
     this.admin.getAdminUserProfile(userId).subscribe({
       next: (response: any) => {
         const data = response?.data ?? response;
-        app.pswPhone = app.pswPhone || data?.phoneNumber || 'N/A';
-        app.pswVerification = data?.verificationStatus || 'N/A';
+        app.pswPhone = app.pswPhone || data?.phoneNumber || '—';
+        app.pswVerification = data?.verificationStatus || '—';
         app.pswPhotoUrl = data?.profilePhoto?.url || null;
         this.cdr.detectChanges();
       },
@@ -329,8 +304,8 @@ export class AdminApplications implements OnInit {
     });
   }
 
-  getCareHomeName(app: ApplicationItem): string {
-    return app.careHomeName || 'N/A';
+  getOfferTitle(app: ApplicationItem): string {
+    return app.offerTitle || '—';
   }
 
   getShiftInfo(app: ApplicationItem): string {
@@ -341,11 +316,25 @@ export class AdminApplications implements OnInit {
         month: 'short', day: 'numeric', year: 'numeric'
       });
       if (s.startTime && s.endTime) {
-        return `${dateStr} • ${s.startTime.slice(0,5)} - ${s.endTime.slice(0,5)}`;
+        return `${dateStr} • ${s.startTime.slice(0, 5)} - ${s.endTime.slice(0, 5)}`;
       }
       return dateStr;
     }
-    return 'N/A';
+    return '—';
+  }
+
+  getExtraShifts(app: ApplicationItem): string[] {
+    const shifts = (app as any).shifts as any[];
+    if (!shifts || shifts.length <= 1) return [];
+    return shifts.slice(1).map(s => {
+      const dateStr = new Date(s.date).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      });
+      if (s.startTime && s.endTime) {
+        return `${dateStr} • ${s.startTime.slice(0, 5)} - ${s.endTime.slice(0, 5)}`;
+      }
+      return dateStr;
+    });
   }
 
   getSubmittedDate(app: ApplicationItem): string {
@@ -358,7 +347,7 @@ export class AdminApplications implements OnInit {
         minute: '2-digit',
       });
     }
-    return 'N/A';
+    return '—';
   }
 
   isProcessing(app: ApplicationItem): boolean {
@@ -377,4 +366,3 @@ export class AdminApplications implements OnInit {
     this.lightboxUrl = null;
   }
 }
-
