@@ -11,29 +11,29 @@
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
-    "options": {
-      "browser": "src/main.ts",
-      "index": "src/index.html",
-      "tsConfig": "tsconfig.app.json",
-      "inlineStyleLanguage": "scss",
-      "assets": [
-        {
-          "glob": "**/*",
-          "input": "public"
-        }
-      ],
-      "styles": [
-        "src/styles.scss"
-      ],
-      "allowedCommonJsDependencies": [
-        "leaflet"
-      ],
-      "stylePreprocessorOptions": {
-        "includePaths": [
-          "src/styles"
-        ]
-      }
-    },
+          "options": {
+            "browser": "src/main.ts",
+            "index": "src/index.html",
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
+            "allowedCommonJsDependencies": [
+              "leaflet"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/styles"
+              ]
+            }
+          },
           "configurations": {
             "production": {
               "outputHashing": "all"
@@ -41,6 +41,16 @@
             "development": {
               "optimization": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environmentlocal.ts"
+                }
+              ]
             }
           }
         },
@@ -52,9 +62,12 @@
           "configurations": {
             "development": {
               "buildTarget": "frontend:build:development"
+            },
+            "local": {
+              "buildTarget": "frontend:build:local"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "local"
         }
       }
     }
